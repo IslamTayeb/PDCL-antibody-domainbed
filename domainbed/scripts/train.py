@@ -300,9 +300,9 @@ if __name__ == "__main__":
             for name, loader, weights in evals:
                 acc = misc.accuracy(algorithm, loader, weights, device)
                 results[name+'_acc'] = acc
-                feats, gt_labels, preds = misc.features(algorithm, loader, weights, device)
-                torch.save({'features': feats, 'labels': gt_labels, 'preds': preds},
-                    os.path.join(args.output_dir, 'output.pt'))
+                # feats, gt_labels, preds = misc.features(algorithm, loader, weights, device)
+                # torch.save({'features': feats, 'labels': gt_labels, 'preds': preds},
+                #     os.path.join(args.output_dir, 'output.pt'))
 
             ##========
             agg_val_acc, nagg_val_acc = 0, 0
