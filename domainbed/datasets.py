@@ -1,12 +1,13 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 
-from domainbed.lib import create_logger
+from domainbed.lib.logger import create_logger
 import numpy as np
 import torch
 import torch.nn.functional as F
 import pandas as pd
 from PIL import Image, ImageFile
 from torch.utils.data import TensorDataset, Dataset, Subset
+import os
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 logger = create_logger(__name__, level="debug")
 
@@ -139,17 +140,45 @@ class AbRosetta(MultipleDomainDataset):
         self.datasets = []
 
         try:
-            df = pd.read_csv("./data/abdb.csv")
+            # Try multiple possible filenames
+            possible_paths = [
+                "./data/abdb.csv",
+                "./data/antibody_domainbed_dataset.csv",
+                "domainbed/data/abdb.csv",
+                "/domainbed/data/antibody_domainbed_dataset.csv"
+                "antibody-domainbed/domainbed/data/abdb.csv",
+                "antibody-domainbed/domainbed/data/antibody_domainbed_dataset.csv"
+                "imt11/antibody-domainbed/domainbed/data/abdb.csv",
+                "imt11/antibody-domainbed/domainbed/data/antibody_domainbed_dataset.csv"
+
+            ]
             
-        except:
-            print("Error loading the dataset, was it downloaded?")
+            df = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    print(f"Loading dataset from {path}")
+                    df = pd.read_csv(path)
+                    break
+            
+            if df is None:
+                raise FileNotFoundError("Could not find dataset file")
+                
+        except Exception as e:
+            print(f"Error loading the dataset: {e}")
+            print("Expected file locations: ./data/abdb.csv or ./data/antibody_domainbed_dataset.csv")
+            # Set default values to prevent NoneType errors
+            self.input_shape = (149+149+915, 22)  # Default input shape
+            self.num_classes = 2
+            self.datasets = []
+            self.ENVIRONMENTS = np.array(['env0', 'env1', 'env2', 'env3'])
             return
+
         df.dropna(subset=['ddG'], inplace=True)
         df.drop_duplicates(subset=['fv_heavy_aho', 'fv_light_aho', 'fv_light_aho_seed', 'fv_heavy_aho_seed', 'ddG'],
                            inplace=True, keep='first')
         df.loc[df['target'] == 'IL-6', 'target'] = 'IL6'
         df.dropna(subset=['ddG'], inplace=True)
-        df.drop_duplicates(subset=['seqid'], inplace=True, keep='last')
+        df.drop_duplicates(subset=['seq_id'], inplace=True, keep='last')
         print(df.groupby(['env', 'target'])['target'].count())
 
         df['is_binder'] = df['ddG'].apply(

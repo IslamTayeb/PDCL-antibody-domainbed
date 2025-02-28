@@ -20,7 +20,7 @@ from domainbed.lib.misc import (
     random_pairs_of_minibatches, split_meta_train_test, ParamDict,
     MovingAverage, l2_between_dicts, proj, Nonparametric
 )
-from domainbed.lib import create_logger
+from domainbed.lib.logger import create_logger
 logger = create_logger(__name__)
 
 ALGORITHMS = [

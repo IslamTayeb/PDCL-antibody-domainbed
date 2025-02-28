@@ -20,7 +20,7 @@ from domainbed import algorithms
 from domainbed.lib import misc
 from domainbed.lib.fast_data_loader import InfiniteDataLoader, FastDataLoader
 from domainbed.lib.collate import rn_collate, esm_collate, pad_x,Alphabet, PaddCollator
-from domainbed.lib import create_logger
+from domainbed.lib.logger import create_logger
 import warnings
 from torch.serialization import SourceChangeWarning
 logger = create_logger(__name__)
