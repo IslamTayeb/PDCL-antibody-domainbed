@@ -102,6 +102,9 @@ class ERM(Algorithm):
             num_classes,
             self.hparams['nonlinear_classifier'])
 
+        print("Nonlinear featurizer: ", self.featurizer)
+        print("Nonlinear classifier: ", self.classifier)
+
         self.network = nn.Sequential(self.featurizer, self.classifier)
 
         ## load shared initialization ##
