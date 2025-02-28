@@ -129,7 +129,7 @@ class SeqCNN(nn.Module):
 
         # Return features only - NOT logits
         # The classifier will be handled by the Algorithm class
-        return h
+        # return h
 
     def forward_alternative(self, x):
         print(f"[DEBUG] Input tensor original shape: {x.shape}")

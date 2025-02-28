@@ -1,0 +1,332 @@
+Environment:
+	Python: 3.12.8
+	PyTorch: 2.6.0+cu124
+	CUDA: 12.4
+	CUDNN: 90100
+	NumPy: 2.2.2
+	PIL: 11.1.0
+Args:
+	algorithm: ERM
+	checkpoint_freq: None
+	data_dir: .
+	dataset: AbRosetta
+	holdout_fraction: 0.2
+	hparams: None
+	hparams_seed: 0
+	init_step: False
+	output_dir: outputs/
+	path_for_init: None
+	save_model_every_checkpoint: False
+	seed: 0
+	skip_model_save: False
+	steps: None
+	target: None
+	task: domain_generalization
+	test_envs: [0]
+	trial_seed: 0
+	uda_holdout_fraction: 0
+	use_esm: False
+HParams:
+	add_noise: False
+	batch_size: 32
+	class_balanced: False
+	data_augmentation: True
+	lr: 5e-05
+	nonlinear_classifier: False
+	resnet18: True
+	resnet_dropout: 0.0
+	weight_decay: 0.0
+Device:  cuda
+Loading dataset from domainbed/data/abdb.csv
+env   target    
+env0  HIV1           184
+      SARS_CoV_2    1117
+env1  HIV1           778
+      SARS_CoV_2    3095
+env2  HIV1           275
+      SARS_CoV_2    1469
+env3  HIV1           548
+      SARS_CoV_2    3140
+Name: target, dtype: int64
+env   target      is_binder
+env0  HIV1        False          89
+                  True           95
+      SARS_CoV_2  False         577
+                  True          540
+env1  HIV1        False         226
+                  True          552
+      SARS_CoV_2  False        1347
+                  True         1748
+env2  HIV1        False         132
+                  True          143
+      SARS_CoV_2  False         930
+                  True          539
+env3  HIV1        False         233
+                  True          315
+      SARS_CoV_2  False        1516
+                  True         1624
+Name: is_binder, dtype: int64
+(10606, 16)
+['env0' 'env1' 'env2' 'env3']
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=492227) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 301, in <module>
+    acc = misc.accuracy(algorithm, loader, weights, device)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/lib/misc.py", line 232, in accuracy
+    correct += (p.argmax(1).eq(y).float() * batch_weights).sum().item()
+                ^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (32) must match the size of tensor b (2) at non-singleton dimension 1
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpqv4yllat'>
+  _warnings.warn(warn_message, ResourceWarning)
+Environment:
+	Python: 3.12.8
+	PyTorch: 2.6.0+cu124
+	CUDA: 12.4
+	CUDNN: 90100
+	NumPy: 2.2.2
+	PIL: 11.1.0
+Args:
+	algorithm: ERM
+	checkpoint_freq: None
+	data_dir: .
+	dataset: AbRosetta
+	holdout_fraction: 0.2
+	hparams: None
+	hparams_seed: 0
+	init_step: False
+	output_dir: outputs/
+	path_for_init: None
+	save_model_every_checkpoint: False
+	seed: 0
+	skip_model_save: False
+	steps: None
+	target: None
+	task: domain_generalization
+	test_envs: [0]
+	trial_seed: 0
+	uda_holdout_fraction: 0
+	use_esm: False
+HParams:
+	add_noise: False
+	batch_size: 32
+	class_balanced: False
+	data_augmentation: True
+	lr: 5e-05
+	nonlinear_classifier: False
+	resnet18: True
+	resnet_dropout: 0.0
+	weight_decay: 0.0
+Device:  cuda
+Loading dataset from domainbed/data/abdb.csv
+env   target    
+env0  HIV1           184
+      SARS_CoV_2    1117
+env1  HIV1           778
+      SARS_CoV_2    3095
+env2  HIV1           275
+      SARS_CoV_2    1469
+env3  HIV1           548
+      SARS_CoV_2    3140
+Name: target, dtype: int64
+env   target      is_binder
+env0  HIV1        False          89
+                  True           95
+      SARS_CoV_2  False         577
+                  True          540
+env1  HIV1        False         226
+                  True          552
+      SARS_CoV_2  False        1347
+                  True         1748
+env2  HIV1        False         132
+                  True          143
+      SARS_CoV_2  False         930
+                  True          539
+env3  HIV1        False         233
+                  True          315
+      SARS_CoV_2  False        1516
+                  True         1624
+Name: is_binder, dtype: int64
+(10606, 16)
+['env0' 'env1' 'env2' 'env3']
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=494887) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 301, in <module>
+    acc = misc.accuracy(algorithm, loader, weights, device)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/lib/misc.py", line 232, in accuracy
+    correct += (p.argmax(1).eq(y).float() * batch_weights).sum().item()
+                ^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (32) must match the size of tensor b (2) at non-singleton dimension 1
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpryzmstz_'>
+  _warnings.warn(warn_message, ResourceWarning)
+Environment:
+	Python: 3.12.8
+	PyTorch: 2.6.0+cu124
+	CUDA: 12.4
+	CUDNN: 90100
+	NumPy: 2.2.2
+	PIL: 11.1.0
+Args:
+	algorithm: ERM
+	checkpoint_freq: None
+	data_dir: .
+	dataset: AbRosetta
+	holdout_fraction: 0.2
+	hparams: None
+	hparams_seed: 0
+	init_step: False
+	output_dir: outputs/
+	path_for_init: None
+	save_model_every_checkpoint: False
+	seed: 0
+	skip_model_save: False
+	steps: None
+	target: None
+	task: domain_generalization
+	test_envs: [0]
+	trial_seed: 0
+	uda_holdout_fraction: 0
+	use_esm: False
+HParams:
+	add_noise: False
+	batch_size: 32
+	class_balanced: False
+	data_augmentation: True
+	lr: 5e-05
+	nonlinear_classifier: False
+	resnet18: True
+	resnet_dropout: 0.0
+	weight_decay: 0.0
+Device:  cuda
+Loading dataset from domainbed/data/abdb.csv
+env   target    
+env0  HIV1           184
+      SARS_CoV_2    1117
+env1  HIV1           778
+      SARS_CoV_2    3095
+env2  HIV1           275
+      SARS_CoV_2    1469
+env3  HIV1           548
+      SARS_CoV_2    3140
+Name: target, dtype: int64
+env   target      is_binder
+env0  HIV1        False          89
+                  True           95
+      SARS_CoV_2  False         577
+                  True          540
+env1  HIV1        False         226
+                  True          552
+      SARS_CoV_2  False        1347
+                  True         1748
+env2  HIV1        False         132
+                  True          143
+      SARS_CoV_2  False         930
+                  True          539
+env3  HIV1        False         233
+                  True          315
+      SARS_CoV_2  False        1516
+                  True         1624
+Name: is_binder, dtype: int64
+(10606, 16)
+['env0' 'env1' 'env2' 'env3']
+Nonlinear featurizer:  SeqCNN(
+  (embed): Embedding(1214, 64, padding_idx=0)
+  (emb_ab): Embedding(22, 64, padding_idx=0)
+  (emb_ag): Embedding(22, 64, padding_idx=0)
+  (conv_layers): Sequential(
+    (0): Conv1d(64, 64, kernel_size=(10,), stride=(2,))
+    (1): ReLU()
+    (2): Conv1d(64, 128, kernel_size=(5,), stride=(2,))
+    (3): ReLU()
+  )
+  (ffd): Linear(in_features=256, out_features=256, bias=True)
+  (classifier): Linear(in_features=256, out_features=2, bias=True)
+)
+Nonlinear classifier:  Linear(in_features=256, out_features=2, bias=True)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=495921) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 301, in <module>
+    acc = misc.accuracy(algorithm, loader, weights, device)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/lib/misc.py", line 232, in accuracy
+    correct += (p.argmax(1).eq(y).float() * batch_weights).sum().item()
+                ^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (32) must match the size of tensor b (2) at non-singleton dimension 1
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpah5ix4k1'>
+  _warnings.warn(warn_message, ResourceWarning)
