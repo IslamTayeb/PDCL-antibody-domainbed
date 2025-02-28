@@ -117,8 +117,11 @@ class SeqCNN(nn.Module):
             nn.ReLU()
         )
         
-        # feed forward
-        self.ffd = nn.Linear(2*2*self.d_model, self.n_outputs)        
+        # intermediate features layer
+        self.ffd = nn.Linear(2*2*self.d_model, self.n_outputs)
+        
+        # Add the final classification layer
+        self.classifier = nn.Linear(self.n_outputs, 2)  # 2 classes: binder/non-binder
 
 
     def features(self, x):
@@ -137,18 +140,76 @@ class SeqCNN(nn.Module):
         
         return h
         
-    def forward(self, x):
-        x_ab = x[:, :298]
-        x_ag = x[:, 298:]
+    # def forward(self, x):
+    #     x_ab = x[:, :298]
+    #     x_ag = x[:, 298:]
 
-        e_ab = self.emb_ab(x_ab.long()) # [bs, 298, 256]
-        e_ag = self.emb_ag(x_ag.long()) # [bs, 915, 256]
+    #     e_ab = self.emb_ab(x_ab.long()) # [bs, 298, 256]
+    #     e_ag = self.emb_ag(x_ag.long()) # [bs, 915, 256]
 
-        # conv layers
-        h_ab = self.conv_layers(e_ab.permute(0, 2, 1))  # (batch_size, dim, L)
-        h_ag = self.conv_layers(e_ag.permute(0, 2, 1))  # (batch_size, dim, L)
+    #     # conv layers
+    #     h_ab = self.conv_layers(e_ab.permute(0, 2, 1)) # (batch_size, dim, L)
+    #     h_ag = self.conv_layers(e_ag.permute(0, 2, 1)) # (batch_size, dim, L)
                 
-        # max pooling separately Heavy & Light Chain && concatenate
-        h = self.ffd(torch.cat([torch.max(h_ab, dim=-1)[0], torch.max(h_ag, dim=-1)[0]], dim=1))
+    #     # max pooling separately Heavy & Light Chain && concatenate
+    #     h = self.ffd(torch.cat([torch.max(h_ab, dim=-1)[0], torch.max(h_ag, dim=-1)[0]], dim=1))
 
+    #     return h
+
+    def forward(self, x):
+        # Debug logging if needed
+        print(f"[DEBUG] Input tensor shape: {x.shape}, dimensions: {x.dim()}")
+        
+        # Handle different input formats
+        if x.dim() == 4:
+            # Found 4D tensor, squeezing last dimension
+            x = x.squeeze(-1)
+        
+        # Split into antibody and antigen segments
+        x_ab = x[:, :298, :]
+        x_ag = x[:, 298:, :]
+        
+        # Process through embeddings
+        e_ab = self.emb_ab(x_ab.argmax(dim=2).long())
+        e_ag = self.emb_ag(x_ag.argmax(dim=2).long())
+        
+        # Apply convolution
+        h_ab = self.conv_layers(e_ab.permute(0, 2, 1))  # [batch_size, channels, length]
+        h_ag = self.conv_layers(e_ag.permute(0, 2, 1))  # [batch_size, channels, length]
+        
+        # Apply global max pooling and concatenate features
+        h = self.ffd(torch.cat([
+            torch.max(h_ab, dim=2)[0],  # Max pooling over sequence dimension
+            torch.max(h_ag, dim=2)[0]   # Max pooling over sequence dimension
+        ], dim=1))
+        
+        # Return features only - NOT logits
+        # The classifier will be handled by the Algorithm class
+        return h
+
+    def forward_alternative(self, x):
+        print(f"[DEBUG] Input tensor original shape: {x.shape}")
+        
+        # If the input is [batch, seq_len*one_hot, 1, 1] or similar
+        # Reshape directly to the format we need
+        if x.dim() == 4:
+            batch_size = x.shape[0]
+            total_length = x.shape[1]
+            x = x.reshape(batch_size, total_length//22, 22)
+            print(f"[DEBUG] Reshaped from 4D to 3D: {x.shape}")
+        
+        # Continue with regular processing
+        x_ab = x[:, :298, :]
+        x_ag = x[:, 298:, :]
+        
+        # Skip embedding and work directly with one-hot encoded data
+        # This approach might be cleaner if the issue is with embedding dimensions
+        h_ab = self.conv_layers(x_ab.permute(0, 2, 1).float())
+        h_ag = self.conv_layers(x_ag.permute(0, 2, 1).float())
+        
+        h = self.ffd(torch.cat([
+            torch.max(h_ab, dim=2)[0],
+            torch.max(h_ag, dim=2)[0]
+        ], dim=1))
+        
         return h

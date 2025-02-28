@@ -13,7 +13,7 @@ class _InfiniteSampler(torch.utils.data.Sampler):
                 yield batch
 
 class InfiniteDataLoader:
-    def __init__(self, dataset, weights, batch_size, num_workers):
+    def __init__(self, dataset, weights, batch_size, num_workers, collate_fn=None):
         super().__init__()
 
         if weights is not None:
@@ -35,7 +35,8 @@ class InfiniteDataLoader:
         self._infinite_iterator = iter(torch.utils.data.DataLoader(
             dataset,
             num_workers=num_workers,
-            batch_sampler=_InfiniteSampler(batch_sampler)
+            batch_sampler=_InfiniteSampler(batch_sampler),
+            collate_fn=collate_fn
         ))
 
     def __iter__(self):
@@ -47,7 +48,7 @@ class InfiniteDataLoader:
 
 
 class InfiniteDataLoaderWithoutReplacement:
-    def __init__(self, dataset, weights, batch_size, num_workers):
+    def __init__(self, dataset, weights, batch_size, num_workers, collate_fn=None):
         super().__init__()
 
         if weights is not None:
@@ -69,7 +70,8 @@ class InfiniteDataLoaderWithoutReplacement:
         self._infinite_iterator = iter(torch.utils.data.DataLoader(
             dataset,
             num_workers=num_workers,
-            batch_sampler=_InfiniteSampler(batch_sampler)
+            batch_sampler=_InfiniteSampler(batch_sampler),
+            collate_fn=collate_fn
         ))
 
     def __iter__(self):
@@ -84,7 +86,7 @@ class InfiniteDataLoaderWithoutReplacement:
 class FastDataLoader:
     """DataLoader wrapper with slightly improved speed by not respawning worker
     processes at every epoch."""
-    def __init__(self, dataset, batch_size, num_workers):
+    def __init__(self, dataset, batch_size, num_workers, collate_fn=None):
         super().__init__()
 
         batch_sampler = torch.utils.data.BatchSampler(
@@ -96,7 +98,8 @@ class FastDataLoader:
         self._infinite_iterator = iter(torch.utils.data.DataLoader(
             dataset,
             num_workers=num_workers,
-            batch_sampler=_InfiniteSampler(batch_sampler)
+            batch_sampler=_InfiniteSampler(batch_sampler),
+            collate_fn=collate_fn
         ))
 
         self._length = len(batch_sampler)

@@ -79,3 +79,190 @@ Traceback (most recent call last):
   File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
     raise KeyError(key) from err
 KeyError: 'ag_wt'
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 195, in <module>
+    train_loaders = [InfiniteDataLoader(
+                     ^^^^^^^^^^^^^^^^^^^
+TypeError: InfiniteDataLoader.__init__() got an unexpected keyword argument 'collate_fn'
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpsll8j66_'>
+  _warnings.warn(warn_message, ResourceWarning)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=482895) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 284, in <module>
+    step_vals = algorithm.update(minibatches_device, uda_device)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/algorithms.py", line 133, in update
+    loss = F.cross_entropy(self.predict(all_x), all_y)
+                           ^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/algorithms.py", line 142, in predict
+    return self.network(x)
+           ^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/networks.py", line 148, in forward
+    h_ab = self.conv_layers(e_ab.permute(0, 2, 1))  # (batch_size, dim, L)
+                            ^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: permute(sparse_coo): number of dimensions in the tensor input does not match the length of the desired ordering of dimensions i.e. input.dim() = 4 is not equal to len(dims) = 3
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpv26b6gjs'>
+  _warnings.warn(warn_message, ResourceWarning)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=483985) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 301, in <module>
+    acc = misc.accuracy(algorithm, loader, weights, device)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/lib/misc.py", line 232, in accuracy
+    correct += (p.argmax(1).eq(y).float() * batch_weights).sum().item()
+                ^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (32) must match the size of tensor b (2) at non-singleton dimension 1
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpkkv1zrt7'>
+  _warnings.warn(warn_message, ResourceWarning)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485471) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 284, in <module>
+    step_vals = algorithm.update(minibatches_device, uda_device)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/algorithms.py", line 133, in update
+    loss = F.cross_entropy(self.predict(all_x), all_y)
+                           ^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/algorithms.py", line 142, in predict
+    return self.network(x)
+           ^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/container.py", line 250, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1739, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1750, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 125, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: mat1 and mat2 shapes cannot be multiplied (96x2 and 256x2)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpy0b591pp'>
+  _warnings.warn(warn_message, ResourceWarning)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=485889) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/scripts/train.py", line 301, in <module>
+    acc = misc.accuracy(algorithm, loader, weights, device)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/hpc/group/naderilab/imt11/antibody-domainbed/domainbed/lib/misc.py", line 232, in accuracy
+    correct += (p.argmax(1).eq(y).float() * batch_weights).sum().item()
+                ^^^^^^^^^^^^^^^^^
+RuntimeError: The size of tensor a (32) must match the size of tensor b (2) at non-singleton dimension 1
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/tempfile.py:936: ResourceWarning: Implicitly cleaning up <TemporaryDirectory '/tmp/tmpl6izycjo'>
+  _warnings.warn(warn_message, ResourceWarning)

@@ -82,7 +82,7 @@ class SingleDomainAbDataset(Dataset):
             # Pad antigen
             onehot_target = F.one_hot(
                 torch.tensor(
-                    [self.aa_to_int[residue] for residue in row['ag_wt']]),
+                    [self.aa_to_int[residue] for residue in row['ag']]),
                 num_classes=22
             )  # [len_target, 22]
         onehot_target = F.pad(
@@ -117,7 +117,7 @@ class ESMSingleDomainAbDataset(Dataset):
         except:
             heavy = row['fv_heavy_aho']
             light = row['fv_light_aho']
-            target = row['ag_wt'][:self.max_target_len]
+            target = row['ag'][:self.max_target_len]
         y = F.one_hot(
             torch.tensor([int(row['is_binder'])]), num_classes=2).reshape(-1).float()
         polyglycine_linker = "G"*25
@@ -186,7 +186,7 @@ class AbRosetta(MultipleDomainDataset):
 
         # Max target length
         if max_target_len is None:
-            target_len = df['ag_wt'].apply(len)
+            target_len = df['ag'].apply(len)
             max_target_len = target_len.max()
         self.max_target_len = max_target_len
         logger.info(f"Max target length: {self.max_target_len}")
