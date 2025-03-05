@@ -36857,3 +36857,2869 @@ torch.Size([32, 2]) torch.Size([32, 2])
 [DEBUG] Input tensor shape: torch.Size([1, 1213, 22]), dimensions: 3
 torch.Size([1, 2]) torch.Size([1, 2])
 0.5862539715  0.6786150974  0.5917387128  0.5807692308  0.9938689900  0.6718346253  0.9978510029  0.6896551724  0.9915282955  0.6743554953  461.06436119  0.0352746037  0.1735486984  14999         0.5209255997 
+Environment:
+	Python: 3.12.8
+	PyTorch: 2.6.0+cu124
+	CUDA: 12.4
+	CUDNN: 90100
+	NumPy: 2.2.2
+	PIL: 11.1.0
+Args:
+	algorithm: ERM
+	checkpoint_freq: None
+	data_dir: .
+	dataset: AbRosetta
+	holdout_fraction: 0.2
+	hparams: None
+	hparams_seed: 0
+	init_step: False
+	output_dir: ./outputs
+	path_for_init: None
+	save_model_every_checkpoint: False
+	seed: 0
+	skip_model_save: False
+	steps: None
+	target: None
+	task: domain_generalization
+	test_envs: [0]
+	trial_seed: 0
+	uda_holdout_fraction: 0
+	use_esm: False
+HParams:
+	add_noise: False
+	batch_size: 32
+	class_balanced: False
+	data_augmentation: True
+	lr: 5e-05
+	nonlinear_classifier: False
+	resnet18: True
+	resnet_dropout: 0.0
+	weight_decay: 0.0
+Device:  cpu
+Loading dataset from domainbed/data/abdb.csv
+env   target    
+env0  HIV1           184
+      SARS_CoV_2    1117
+env1  HIV1           778
+      SARS_CoV_2    3095
+env2  HIV1           275
+      SARS_CoV_2    1469
+env3  HIV1           548
+      SARS_CoV_2    3140
+Name: target, dtype: int64
+env   target      is_binder
+env0  HIV1        False          89
+                  True           95
+      SARS_CoV_2  False         577
+                  True          540
+env1  HIV1        False         226
+                  True          552
+      SARS_CoV_2  False        1347
+                  True         1748
+env2  HIV1        False         132
+                  True          143
+      SARS_CoV_2  False         930
+                  True          539
+env3  HIV1        False         233
+                  True          315
+      SARS_CoV_2  False        1516
+                  True         1624
+Name: is_binder, dtype: int64
+(10606, 16)
+['env0' 'env1' 'env2' 'env3']
+Nonlinear featurizer:  SeqCNN(
+  (embed): Embedding(1214, 64, padding_idx=0)
+  (emb_ab): Embedding(22, 64, padding_idx=0)
+  (emb_ag): Embedding(22, 64, padding_idx=0)
+  (conv_layers): Sequential(
+    (0): Conv1d(64, 64, kernel_size=(10,), stride=(2,))
+    (1): ReLU()
+    (2): Conv1d(64, 128, kernel_size=(5,), stride=(2,))
+    (3): ReLU()
+  )
+  (ffd): Linear(in_features=256, out_features=256, bias=True)
+)
+Nonlinear classifier:  Linear(in_features=256, out_features=2, bias=True)
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+/hpc/group/naderilab/imt11/Miniconda3/lib/python3.12/multiprocessing/popen_fork.py:66: DeprecationWarning: This process (pid=1055793) is multi-threaded, use of fork() may lead to deadlocks in the child.
+  self.pid = os.fork()
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([17, 1213, 22]), dimensions: 3
+torch.Size([17, 2]) torch.Size([17, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([27, 1213, 22]), dimensions: 3
+torch.Size([27, 2]) torch.Size([27, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([20, 1213, 22]), dimensions: 3
+torch.Size([20, 2]) torch.Size([20, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([7, 1213, 22]), dimensions: 3
+torch.Size([7, 2]) torch.Size([7, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([4, 1213, 22]), dimensions: 3
+torch.Size([4, 2]) torch.Size([4, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([6, 1213, 22]), dimensions: 3
+torch.Size([6, 2]) torch.Size([6, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([28, 1213, 22]), dimensions: 3
+torch.Size([28, 2]) torch.Size([28, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([1, 1213, 22]), dimensions: 3
+torch.Size([1, 2]) torch.Size([1, 2])
+agg_test_acc  agg_val_acc   env0_in_acc   env0_out_acc  env1_in_acc   env1_out_acc  env2_in_acc   env2_out_acc  env3_in_acc   env3_out_acc  epoch         loss          mem_gb        step          step_time    
+0.4911124656  0.5133111465  0.4860710855  0.4961538462  0.5898676993  0.6098191214  0.3882521490  0.4022988506  0.5252456794  0.5278154681  0.0000000000  0.7022363544  0.0000000000  0             9.2166914940 
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([17, 1213, 22]), dimensions: 3
+torch.Size([17, 2]) torch.Size([17, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([27, 1213, 22]), dimensions: 3
+torch.Size([27, 2]) torch.Size([27, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([20, 1213, 22]), dimensions: 3
+torch.Size([20, 2]) torch.Size([20, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([7, 1213, 22]), dimensions: 3
+torch.Size([7, 2]) torch.Size([7, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([4, 1213, 22]), dimensions: 3
+torch.Size([4, 2]) torch.Size([4, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([6, 1213, 22]), dimensions: 3
+torch.Size([6, 2]) torch.Size([6, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([28, 1213, 22]), dimensions: 3
+torch.Size([28, 2]) torch.Size([28, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([1, 1213, 22]), dimensions: 3
+torch.Size([1, 2]) torch.Size([1, 2])
+0.6429616490  0.7109386461  0.6397694524  0.6461538462  0.6934494998  0.6847545220  0.7621776504  0.7614942529  0.6973907150  0.6865671642  15.369836695  0.6065172363  0.0000000000  500           3.3655131297 
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([96, 1213, 22]), dimensions: 3
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([17, 1213, 22]), dimensions: 3
+torch.Size([17, 2]) torch.Size([17, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([27, 1213, 22]), dimensions: 3
+torch.Size([27, 2]) torch.Size([27, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([20, 1213, 22]), dimensions: 3
+torch.Size([20, 2]) torch.Size([20, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
+torch.Size([32, 2]) torch.Size([32, 2])
+[DEBUG] Input tensor shape: torch.Size([32, 1213, 22]), dimensions: 3
