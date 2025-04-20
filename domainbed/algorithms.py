@@ -138,6 +138,10 @@ class PDCL(Algorithm):
         # Track iterations
         self.update_count += 1
 
+        # Make sure current_domain doesn't exceed available domains
+        if self.current_domain >= len(minibatches):
+            self.current_domain = len(minibatches) - 1
+
         # Extract current domain data
         x_current, y_current = minibatches[self.current_domain]
 
@@ -183,11 +187,14 @@ class PDCL(Algorithm):
 
         # If we're moving to a new domain
         if self.update_count % self.hparams.get('domain_steps', 1000) == 0:
-            self.current_domain += 1
+            new_domain = self.current_domain + 1
+            # Only update if the new domain is valid
+            if new_domain < len(minibatches):
+                self.current_domain = new_domain
 
-            # Partition buffer based on dual variables
-            if self.current_domain > 1:
-                self._partition_buffer()
+                # Partition buffer based on dual variables
+                if self.current_domain > 1:
+                    self._partition_buffer()
 
         return {'loss': loss.item()}
 

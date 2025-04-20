@@ -152,17 +152,17 @@ class AbRosetta(MultipleDomainDataset):
                 "imt11/antibody-domainbed/domainbed/data/antibody_domainbed_dataset.csv"
 
             ]
-            
+
             df = None
             for path in possible_paths:
                 if os.path.exists(path):
                     print(f"Loading dataset from {path}")
                     df = pd.read_csv(path)
                     break
-            
+
             if df is None:
                 raise FileNotFoundError("Could not find dataset file")
-                
+
         except Exception as e:
             print(f"Error loading the dataset: {e}")
             print("Expected file locations: ./data/abdb.csv or ./data/antibody_domainbed_dataset.csv")
@@ -206,7 +206,7 @@ class AbRosetta(MultipleDomainDataset):
 
         print(df.groupby(['env', 'target', 'is_binder'])['is_binder'].count())
         self.df = df
-        print(df.shape)
+        # print(df.shape)
         self.ENVIRONMENTS = np.array(sorted(df['env'].unique()))
         print(self.ENVIRONMENTS)
         df.to_csv('dataset_w_meta.csv')

@@ -229,7 +229,7 @@ def accuracy(network, loader, weights, device):
             if p.size(1) == 1:
                 correct += (p.gt(0).eq(y).float() * batch_weights.view(-1, 1)).sum().item()
             else:
-                print(p.shape, y.shape)
+                # print(p.shape, y.shape)
                 correct += (p.argmax(1).eq(y.argmax(1)).float() * batch_weights).sum().item()
             total += batch_weights.sum().item()
     network.train()
@@ -586,7 +586,7 @@ class SupConLossLambda(torch.nn.Module):
         nans = 0
         for i, (label, domain_label) in enumerate(zip(labels, domain_labels)):
 
-            # take the positive and negative samples wrt in/out domain            
+            # take the positive and negative samples wrt in/out domain
             cond_pos_in_domain = torch.logical_and(labels==label, domain_labels == domain_label) # take all positives
             cond_pos_in_domain[i] = False # exclude itself
             cond_pos_out_domain = torch.logical_and(labels==label, domain_labels != domain_label)
