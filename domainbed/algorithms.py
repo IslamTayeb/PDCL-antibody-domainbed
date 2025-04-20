@@ -24,6 +24,7 @@ from domainbed.lib.logger import create_logger
 logger = create_logger(__name__)
 
 ALGORITHMS = [
+    'PDCL',  # Add PDCL here
     'ERM',
     'ERM_SMA',
     'Fish',
@@ -87,6 +88,150 @@ class Algorithm(torch.nn.Module):
 
     def predict(self, x):
         raise NotImplementedError
+
+class PDCL(Algorithm):
+    """
+    Primal-Dual Continual Learning (PDCL).
+    A constrained optimization approach to continual learning that uses
+    Lagrangian duality and adaptive buffer management.
+    """
+
+    def __init__(self, input_shape, num_classes, num_domains, hparams):
+        super(PDCL, self).__init__(input_shape, num_classes, num_domains, hparams)
+        
+        # Network architecture (same as ERM)
+        self.featurizer = networks.Featurizer(input_shape, self.hparams)
+        self.classifier = networks.Classifier(
+            self.featurizer.n_outputs,
+            num_classes,
+            self.hparams['nonlinear_classifier']
+        )
+        self.network = nn.Sequential(self.featurizer, self.classifier)
+        
+        # Primal optimizer
+        self.optimizer = torch.optim.Adam(
+            self.network.parameters(),
+            lr=self.hparams["primal_lr"],
+            weight_decay=self.hparams['weight_decay']
+        )
+        
+        # Dual variables (Lagrangian multipliers) for each domain constraint
+        self.dual_vars = torch.zeros(num_domains).cuda()
+        
+        # Store examples from each domain for replay
+        self.buffer = {}
+        self.buffer_size = self.hparams['buffer_size']
+        
+        # Register update count for tracking
+        self.register_buffer('update_count', torch.tensor([0]))
+        
+        # Constraint levels for each domain
+        self.epsilon = self.hparams.get('epsilon', 0.05)
+        
+        # Buffer partition parameter
+        self.alpha = self.hparams.get('alpha', 0.5)
+        
+        # Current domain being processed
+        self.current_domain = 0
+    
+    def update(self, minibatches, unlabeled=None):
+        # Track iterations
+        self.update_count += 1
+        
+        # Extract current domain data
+        x_current, y_current = minibatches[self.current_domain]
+        
+        # Save examples from current domain to buffer
+        self._update_buffer(self.current_domain, x_current, y_current)
+        
+        # Initialize losses
+        loss = 0
+        
+        # Current domain loss
+        current_outputs = self.predict(x_current)
+        current_loss = F.cross_entropy(current_outputs, y_current)
+        loss += current_loss
+        
+        # Add constraint terms for previous domains (if any)
+        constraint_slacks = []
+        for domain_idx in range(self.current_domain):
+            if domain_idx in self.buffer:
+                x_prev, y_prev = self.buffer[domain_idx]
+                prev_outputs = self.predict(x_prev)
+                prev_loss = F.cross_entropy(prev_outputs, y_prev)
+                
+                # Calculate constraint slack: loss - epsilon
+                slack = prev_loss - self.epsilon
+                constraint_slacks.append(slack)
+                
+                # Add to Lagrangian: dual_var * slack
+                loss += self.dual_vars[domain_idx] * slack
+        
+        # Primal update
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+        
+        # Dual update (if there are previous domains)
+        if constraint_slacks:
+            for domain_idx, slack in enumerate(constraint_slacks):
+                # Update dual variable: [lambda + eta_d * slack]+
+                self.dual_vars[domain_idx] = torch.clamp(
+                    self.dual_vars[domain_idx] + self.hparams["dual_lr"] * slack,
+                    min=0.0
+                )
+        
+        # If we're moving to a new domain
+        if self.update_count % self.hparams.get('domain_steps', 1000) == 0:
+            self.current_domain += 1
+            
+            # Partition buffer based on dual variables
+            if self.current_domain > 1:
+                self._partition_buffer()
+        
+        return {'loss': loss.item()}
+    
+    def _update_buffer(self, domain_idx, x, y):
+        """Store examples from the current domain in the buffer"""
+        # For initial implementation, just store a random subset
+        if domain_idx not in self.buffer:
+            indices = torch.randperm(x.size(0))[:self.buffer_size // (self.current_domain + 1)]
+            self.buffer[domain_idx] = (x[indices].clone(), y[indices].clone())
+    
+    def _partition_buffer(self):
+        """Partition buffer based on dual variables"""
+        # Implement buffer partition (PB) strategy from Algorithm 1
+        # Allocate more memory to domains with higher dual variables
+        
+        # Normalize dual variables
+        normalized_duals = self.dual_vars[:self.current_domain] / (self.dual_vars[:self.current_domain].sum() + 1e-8)
+        
+        # Calculate partition sizes with minimum allocation
+        partition_sizes = {}
+        for domain_idx in range(self.current_domain):
+            # Apply the affine map on dual variables
+            size = int(self.buffer_size * (
+                self.alpha * normalized_duals[domain_idx] + 
+                (1 - self.alpha) / self.current_domain
+            ))
+            partition_sizes[domain_idx] = max(size, 10)  # Ensure minimum size
+        
+        # Adjust partition sizes to fit buffer size
+        total_size = sum(partition_sizes.values())
+        if total_size > self.buffer_size:
+            scaling_factor = self.buffer_size / total_size
+            for domain_idx in partition_sizes:
+                partition_sizes[domain_idx] = int(partition_sizes[domain_idx] * scaling_factor)
+        
+        # Update buffer with new partitions
+        for domain_idx in partition_sizes:
+            if domain_idx in self.buffer:
+                x, y = self.buffer[domain_idx]
+                indices = torch.randperm(x.size(0))[:partition_sizes[domain_idx]]
+                self.buffer[domain_idx] = (x[indices], y[indices])
+    
+    def predict(self, x):
+        return self.network(x)
 
 class ERM(Algorithm):
     """

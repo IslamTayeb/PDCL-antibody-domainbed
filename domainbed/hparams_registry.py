@@ -146,6 +146,14 @@ def _hparams(algorithm, dataset, use_esm, random_seed):
         else:
             _hparam('sma_start_iter', 5000, lambda r: int(r.choice([5000, 10000])))
 
+    elif algorithm == "PDCL":
+        _hparam('primal_lr', 5e-5, lambda r: 10**r.uniform(-5, -3.5))
+        _hparam('dual_lr', 0.01, lambda r: 10**r.uniform(-3, -1))
+        _hparam('buffer_size', 200, lambda r: int(10**r.uniform(2, 3)))
+        _hparam('epsilon', 0.05, lambda r: r.uniform(0.01, 0.1))
+        _hparam('alpha', 0.5, lambda r: r.uniform(0.3, 0.7))
+        _hparam('domain_steps', 1000, lambda r: int(10**r.uniform(2.5, 3.5)))
+
     # Dataset-and-algorithm-specific hparam definitions. Each block of code
     # below corresponds to exactly one hparam. Avoid nested conditionals.
     _hparam('lr', 5e-5, lambda r: 10**r.uniform(-5, -3.5))

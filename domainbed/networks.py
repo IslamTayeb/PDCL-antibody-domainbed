@@ -97,7 +97,6 @@ class SeqCNN(nn.Module):
 
     def forward(self, x):
         # Debug logging if needed
-        print(f"[DEBUG] Input tensor shape: {x.shape}, dimensions: {x.dim()}")
 
         # Handle different input formats
         if x.dim() == 4:
@@ -132,7 +131,6 @@ class SeqCNN(nn.Module):
         return h
 
     def forward_alternative(self, x):
-        print(f"[DEBUG] Input tensor original shape: {x.shape}")
 
         # If the input is [batch, seq_len*one_hot, 1, 1] or similar
         # Reshape directly to the format we need
@@ -140,7 +138,6 @@ class SeqCNN(nn.Module):
             batch_size = x.shape[0]
             total_length = x.shape[1]
             x = x.reshape(batch_size, total_length // 22, 22)
-            print(f"[DEBUG] Reshaped from 4D to 3D: {x.shape}")
 
         # Continue with regular processing
         x_ab = x[:, :298, :]
