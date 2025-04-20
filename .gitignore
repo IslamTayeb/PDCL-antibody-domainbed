@@ -153,6 +153,7 @@ cython_debug/
 data/
 *.csv
 outputs/
+papers/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
