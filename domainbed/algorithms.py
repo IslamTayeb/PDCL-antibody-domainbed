@@ -134,6 +134,11 @@ class PDCL(Algorithm):
         # Current domain being processed
         self.current_domain = 0
 
+        # Minimum examples per domain
+        self.min_buffer_per_domain = 10
+
+        logger.info(f"PDCL initialized with buffer size: {self.buffer_size}, epsilon: {self.epsilon}, alpha: {self.alpha}")
+
     def update(self, minibatches, unlabeled=None):
         # Track iterations
         self.update_count += 1
@@ -141,6 +146,7 @@ class PDCL(Algorithm):
         # Make sure current_domain doesn't exceed available domains
         if self.current_domain >= len(minibatches):
             self.current_domain = len(minibatches) - 1
+            logger.warning(f"Current domain index {self.current_domain} exceeds minibatch length. Setting to {len(minibatches)-1}.")
 
         # Extract current domain data
         x_current, y_current = minibatches[self.current_domain]
@@ -170,6 +176,8 @@ class PDCL(Algorithm):
 
                 # Add to Lagrangian: dual_var * slack
                 loss += self.dual_vars[domain_idx] * slack
+            else:
+                logger.warning(f"Domain {domain_idx} not found in buffer during constraint computation")
 
         # Primal update
         self.optimizer.zero_grad()
@@ -184,12 +192,14 @@ class PDCL(Algorithm):
                     self.dual_vars[domain_idx] + self.hparams["dual_lr"] * slack,
                     min=0.0
                 )
+                logger.debug(f"Updated dual var for domain {domain_idx}: {self.dual_vars[domain_idx].item()}")
 
         # If we're moving to a new domain
         if self.update_count % self.hparams.get('domain_steps', 1000) == 0:
             new_domain = self.current_domain + 1
             # Only update if the new domain is valid
             if new_domain < len(minibatches):
+                logger.info(f"Moving to new domain: {new_domain} (from {self.current_domain})")
                 self.current_domain = new_domain
 
                 # Partition buffer based on dual variables
@@ -199,43 +209,178 @@ class PDCL(Algorithm):
         return {'loss': loss.item()}
 
     def _update_buffer(self, domain_idx, x, y):
-        """Store examples from the current domain in the buffer"""
-        # For initial implementation, just store a random subset
-        if domain_idx not in self.buffer:
-            indices = torch.randperm(x.size(0))[:self.buffer_size // (self.current_domain + 1)]
-            self.buffer[domain_idx] = (x[indices].clone(), y[indices].clone())
+        """Store examples from the current domain in the buffer (Fill Buffer operation)
+
+        This corresponds to the FB() operation in the PDCL algorithm.
+        """
+        try:
+            # Only add to buffer if domain hasn't been seen before
+            if domain_idx not in self.buffer:
+                # Calculate buffer allocation for this domain
+                allocation = self.buffer_size // (self.current_domain + 1)
+                # Ensure minimum buffer size
+                allocation = max(allocation, self.min_buffer_per_domain)
+
+                # Make sure we don't try to index beyond dataset size
+                batch_size = x.size(0)
+                if allocation > batch_size:
+                    logger.warning(f"Requested buffer size {allocation} exceeds batch size {batch_size}. Using full batch.")
+                    allocation = batch_size
+
+                logger.info(f"Allocating {allocation} examples from domain {domain_idx} to buffer")
+
+                # Select diverse examples using feature space diversity
+                indices = self._select_diverse_examples(x, allocation)
+                self.buffer[domain_idx] = (x[indices].clone(), y[indices].clone())
+                logger.debug(f"Buffer for domain {domain_idx} now contains {allocation} examples")
+            else:
+                logger.debug(f"Domain {domain_idx} already in buffer. Skipping update.")
+        except Exception as e:
+            logger.error(f"Error updating buffer for domain {domain_idx}: {str(e)}")
+            # Ensure we have some data in the buffer to prevent future errors
+            if domain_idx not in self.buffer and x.size(0) > 0:
+                # Take a single example as minimum fallback
+                self.buffer[domain_idx] = (x[0:1].clone(), y[0:1].clone())
+                logger.info(f"Added fallback example for domain {domain_idx}")
+
+    def _select_diverse_examples(self, x, num_examples):
+        """Select diverse examples based on feature space coverage.
+
+        Args:
+            x: Input tensor of shape [batch_size, ...]
+            num_examples: Number of examples to select
+
+        Returns:
+            indices: Tensor of indices of selected examples
+        """
+        try:
+            # Skip diversity selection for small buffers or if num_examples is close to batch size
+            if num_examples >= x.size(0) * 0.8 or num_examples <= 1:
+                return torch.randperm(x.size(0))[:num_examples]
+
+            # Extract features using the model's featurizer
+            with torch.no_grad():
+                features = self.featurizer(x).detach()
+
+            # Normalize features to equalize the importance of each dimension
+            features_norm = F.normalize(features, p=2, dim=1)
+
+            # Greedy diversity selection (farthest-first traversal)
+            selected_indices = []
+
+            # Start with a random example
+            remaining_indices = list(range(x.size(0)))
+            selected_idx = np.random.choice(remaining_indices)
+            selected_indices.append(selected_idx)
+            remaining_indices.remove(selected_idx)
+
+            # Select the rest based on maximum distance from already selected examples
+            for _ in range(1, min(num_examples, x.size(0))):
+                if not remaining_indices:
+                    break
+
+                # Compute distances from each remaining point to all selected points
+                distances = []
+                selected_features = features_norm[selected_indices]
+
+                # Compute minimum distance from each remaining point to any selected point
+                for idx in remaining_indices:
+                    # Calculate cosine similarity (dot product of normalized vectors)
+                    similarity = torch.matmul(selected_features, features_norm[idx])
+                    # Convert to distance (1 - similarity)
+                    min_distance = 1 - torch.max(similarity).item()
+                    distances.append((idx, min_distance))
+
+                # Select the point with maximum minimum distance
+                next_idx = max(distances, key=lambda x: x[1])[0]
+                selected_indices.append(next_idx)
+                remaining_indices.remove(next_idx)
+
+            logger.debug(f"Selected {len(selected_indices)} diverse examples out of {x.size(0)} available")
+            return torch.tensor(selected_indices, device=x.device)
+
+        except Exception as e:
+            logger.warning(f"Error in diversity selection, falling back to random: {str(e)}")
+            return torch.randperm(x.size(0))[:num_examples]
 
     def _partition_buffer(self):
-        """Partition buffer based on dual variables"""
-        # Implement buffer partition (PB) strategy from Algorithm 1
-        # Allocate more memory to domains with higher dual variables
+        """Partition buffer based on dual variables (PB operation)
 
-        # Normalize dual variables
-        normalized_duals = self.dual_vars[:self.current_domain] / (self.dual_vars[:self.current_domain].sum() + 1e-8)
+        This corresponds to the PB() operation in the PDCL algorithm.
+        The dual variables (λ) control the importance of each constraint and
+        therefore the memory allocation for each previous domain.
+        """
+        try:
+            logger.info(f"Partitioning buffer with {len(self.buffer)} domains")
 
-        # Calculate partition sizes with minimum allocation
-        partition_sizes = {}
-        for domain_idx in range(self.current_domain):
-            # Apply the affine map on dual variables
-            size = int(self.buffer_size * (
-                self.alpha * normalized_duals[domain_idx] +
-                (1 - self.alpha) / self.current_domain
-            ))
-            partition_sizes[domain_idx] = max(size, 10)  # Ensure minimum size
+            # Safely normalize dual variables
+            dual_sum = self.dual_vars[:self.current_domain].sum()
+            if dual_sum > 1e-8:
+                normalized_duals = self.dual_vars[:self.current_domain] / dual_sum
+            else:
+                # If all duals are very small, use equal allocation
+                logger.warning("All dual variables are close to zero. Using uniform allocation.")
+                normalized_duals = torch.ones(self.current_domain).cuda() / self.current_domain
 
-        # Adjust partition sizes to fit buffer size
-        total_size = sum(partition_sizes.values())
-        if total_size > self.buffer_size:
-            scaling_factor = self.buffer_size / total_size
+            logger.debug(f"Normalized duals: {normalized_duals.cpu().numpy()}")
+
+            # Calculate partition sizes with minimum allocation - this is the PB function from the paper
+            # Apply the affine map on dual variables: n*_k = α * λ_k + (1-α)/t
+            partition_sizes = {}
+            for domain_idx in range(self.current_domain):
+                if domain_idx in self.buffer:
+                    # This directly implements the affine mapping from the paper
+                    size = int(self.buffer_size * (
+                        self.alpha * normalized_duals[domain_idx] +
+                        (1 - self.alpha) / self.current_domain
+                    ))
+                    # Ensure minimum size
+                    partition_sizes[domain_idx] = max(size, self.min_buffer_per_domain)
+                    logger.debug(f"Initial partition size for domain {domain_idx}: {partition_sizes[domain_idx]}")
+                else:
+                    logger.warning(f"Domain {domain_idx} not found in buffer during partitioning")
+
+            # Adjust partition sizes to fit buffer size
+            total_size = sum(partition_sizes.values())
+            if total_size > self.buffer_size:
+                scaling_factor = self.buffer_size / total_size
+                for domain_idx in partition_sizes:
+                    old_size = partition_sizes[domain_idx]
+                    partition_sizes[domain_idx] = max(int(old_size * scaling_factor), self.min_buffer_per_domain)
+                    logger.debug(f"Adjusted partition size for domain {domain_idx}: {old_size} -> {partition_sizes[domain_idx]}")
+
+            # Implement the FB() function to fill buffer with the partitioned sizes
+            self._fill_buffer(partition_sizes)
+
+        except Exception as e:
+            logger.error(f"Error during buffer partitioning: {str(e)}")
+            # Continue with existing buffer to prevent training failure
+
+    def _fill_buffer(self, partition_sizes):
+        """Fill buffer with examples according to the partition sizes (FB operation)
+
+        This corresponds to the FB() operation in the PDCL algorithm, where
+        we update B_t using B_{t-1}, D_t, and the computed buffer sizes n*_k.
+        """
+        try:
+            # Update buffer with new partitions
             for domain_idx in partition_sizes:
-                partition_sizes[domain_idx] = int(partition_sizes[domain_idx] * scaling_factor)
+                if domain_idx in self.buffer:
+                    x, y = self.buffer[domain_idx]
+                    # Make sure we don't exceed the available examples
+                    examples_available = x.size(0)
+                    allocation = min(partition_sizes[domain_idx], examples_available)
 
-        # Update buffer with new partitions
-        for domain_idx in partition_sizes:
-            if domain_idx in self.buffer:
-                x, y = self.buffer[domain_idx]
-                indices = torch.randperm(x.size(0))[:partition_sizes[domain_idx]]
-                self.buffer[domain_idx] = (x[indices], y[indices])
+                    if allocation < partition_sizes[domain_idx]:
+                        logger.warning(f"Domain {domain_idx} has only {examples_available} examples but {partition_sizes[domain_idx]} requested")
+
+                    # Select diverse examples based on feature space coverage
+                    indices = self._select_diverse_examples(x, allocation)
+                    self.buffer[domain_idx] = (x[indices].clone(), y[indices].clone())
+                    logger.info(f"Updated buffer for domain {domain_idx} with {allocation} diverse examples")
+        except Exception as e:
+            logger.error(f"Error during buffer filling: {str(e)}")
+            # Continue with existing buffer to prevent training failure
 
     def predict(self, x):
         return self.network(x)

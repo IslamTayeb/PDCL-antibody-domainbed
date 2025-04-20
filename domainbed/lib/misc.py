@@ -240,15 +240,35 @@ class Tee:
     def __init__(self, fname, mode="a"):
         self.stdout = sys.stdout
         self.file = open(fname, mode)
+        self.is_closed = False
 
     def write(self, message):
-        self.stdout.write(message)
-        self.file.write(message)
-        self.flush()
+        try:
+            self.stdout.write(message)
+            if not self.is_closed:
+                self.file.write(message)
+            self.flush()
+        except (ValueError, IOError) as e:
+            # Handle IO errors gracefully
+            if not self.is_closed:
+                print(f"Warning: IO error in Tee: {str(e)}", file=sys.__stdout__)
+                self.close()  # Close the file to prevent future errors
 
     def flush(self):
         self.stdout.flush()
-        self.file.flush()
+        if not self.is_closed:
+            try:
+                self.file.flush()
+            except (ValueError, IOError):
+                pass  # Ignore flush errors on closed file
+
+    def close(self):
+        if not self.is_closed:
+            try:
+                self.file.close()
+            except Exception:
+                pass  # Ignore errors during close
+            self.is_closed = True
 
 class ParamDict(OrderedDict):
     """Code adapted from https://github.com/Alok/rl_implementations/tree/master/reptile.

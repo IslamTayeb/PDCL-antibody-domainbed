@@ -190,7 +190,7 @@ if __name__ == "__main__":
             collate_fn = partial(
                 esm_collate, x_collate_fn=algorithm.network.featurizer.get_batch_tensor_x)
     else:
-        collate_fn = rn_collate 
+        collate_fn = rn_collate
     logger.info(f"Batch size: {hparams['batch_size']}")
     train_loaders = [InfiniteDataLoader(
         dataset=env,
@@ -347,9 +347,8 @@ if __name__ == "__main__":
             if args.save_model_every_checkpoint:
                 save_checkpoint(f'model_step{step}.pkl')
 
-            # Save best model for ensembling
             if best_acc < agg_val_acc:
-                logger.info(f'Saving best model... at update step {step}')
+                # logger.info(f'Saving best model... at update step {step}')
                 best_acc = agg_val_acc
                 save_checkpoint('best_model.pkl', results=json.dumps(results, sort_keys=True))
 
@@ -360,5 +359,11 @@ if __name__ == "__main__":
     with open(os.path.join(args.output_dir, 'done'), 'w') as f:
         f.write('done')
 
-    sys.stdout.file.close()
-    sys.stderr.file.close()
+    # Properly close output redirection
+    try:
+        if hasattr(sys.stdout, 'close'):
+            sys.stdout.close()
+        if hasattr(sys.stderr, 'close'):
+            sys.stderr.close()
+    except Exception as e:
+        print(f"Warning: Error while closing streams: {str(e)}", file=sys.__stdout__)
