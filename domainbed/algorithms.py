@@ -90,16 +90,20 @@ class Algorithm(torch.nn.Module):
         raise NotImplementedError
 
 class PDCL(Algorithm):
-    """
-    Primal-Dual Continual Learning (PDCL).
-    A constrained optimization approach to continual learning that uses
-    Lagrangian duality and adaptive buffer management.
-    """
+    # Primal-Dual Continual Learning (PDCL)
+    # Implementation of Algorithm 1 from the PDCL paper
 
     def __init__(self, input_shape, num_classes, num_domains, hparams):
+        # Line 1: Initialize inputs
+        # - T = num_domains: Number of tasks
+        # - ηp = primal_lr: Primal learning rate
+        # - ηd = dual_lr: Dual learning rate
+        # - Tp = domain_steps: Number of primal steps per domain
+        # - {εk} = epsilon: Constraint levels
+        # - niter = implicit in training loop
         super(PDCL, self).__init__(input_shape, num_classes, num_domains, hparams)
 
-        # Network architecture (same as ERM)
+        # Line 2: Initialize θ (model parameters)
         self.featurizer = networks.Featurizer(input_shape, self.hparams)
         self.classifier = networks.Classifier(
             self.featurizer.n_outputs,
@@ -108,38 +112,41 @@ class PDCL(Algorithm):
         )
         self.network = nn.Sequential(self.featurizer, self.classifier)
 
-        # Primal optimizer
+        # Primal optimizer for updating θ with learning rate ηp
         self.optimizer = torch.optim.Adam(
             self.network.parameters(),
             lr=self.hparams["primal_lr"],
             weight_decay=self.hparams['weight_decay']
         )
 
-        # Dual variables (Lagrangian multipliers) for each domain constraint
+        # Line 4: Initialize λ (done per task in update())
         self.dual_vars = torch.zeros(num_domains).cuda()
 
-        # Store examples from each domain for replay
+        # Buffer to store examples from each domain for replay
         self.buffer = {}
         self.buffer_size = self.hparams['buffer_size']
 
-        # Register update count for tracking
+        # Register update count for tracking iterations
         self.register_buffer('update_count', torch.tensor([0]))
 
-        # Constraint levels for each domain
+        # Line 1: Constraint levels εk for each domain
         self.epsilon = self.hparams.get('epsilon', 0.05)
 
-        # Buffer partition parameter
+        # Parameter α for the buffer partition function (used in PB operation)
         self.alpha = self.hparams.get('alpha', 0.5)
 
-        # Current domain being processed
+        # Current task/domain being processed (part of the for t=1,...,T loop in pseudocode)
         self.current_domain = 0
 
-        # Minimum examples per domain
+        # Minimum examples per domain in buffer
         self.min_buffer_per_domain = 10
 
         logger.info(f"PDCL initialized with buffer size: {self.buffer_size}, epsilon: {self.epsilon}, alpha: {self.alpha}")
 
     def update(self, minibatches, unlabeled=None):
+        # Implementation of the nested loops in Algorithm 1
+        # Line 3-12: for t=1,...,T loop is handled by incrementing self.current_domain
+
         # Track iterations
         self.update_count += 1
 
@@ -151,18 +158,18 @@ class PDCL(Algorithm):
         # Extract current domain data
         x_current, y_current = minibatches[self.current_domain]
 
-        # Save examples from current domain to buffer
+        # Save examples from current domain to buffer (Line 11: FB - Fill Buffer)
         self._update_buffer(self.current_domain, x_current, y_current)
 
         # Initialize losses
         loss = 0
 
-        # Current domain loss
+        # Current domain loss (part of Line 6: Primal update)
         current_outputs = self.predict(x_current)
         current_loss = F.cross_entropy(current_outputs, y_current)
         loss += current_loss
 
-        # Add constraint terms for previous domains (if any)
+        # Line 7: Evaluate constraint slacks
         constraint_slacks = []
         for domain_idx in range(self.current_domain):
             if domain_idx in self.buffer:
@@ -170,21 +177,22 @@ class PDCL(Algorithm):
                 prev_outputs = self.predict(x_prev)
                 prev_loss = F.cross_entropy(prev_outputs, y_prev)
 
-                # Calculate constraint slack: loss - epsilon
+                # sk ← 1/nk ∑ℓ(fθ(xj),yj) - εk, ∀k ∈ {1,...,t-1}
                 slack = prev_loss - self.epsilon
                 constraint_slacks.append(slack.detach().clone())  # Detach slack here
 
-                # Add to Lagrangian: dual_var * slack
+                # Add to Lagrangian: dual_var * slack (part of Line 6: θ ← θ - ηp∇θL(θ,λ))
                 loss += self.dual_vars[domain_idx] * slack
             else:
                 logger.warning(f"Domain {domain_idx} not found in buffer during constraint computation")
 
-        # Primal update
+        # Line 6: Primal update - θ ← θ - ηp∇θL(θ,λ) (×Tp)
+        # Note: In this implementation, one update is performed per call rather than Tp updates
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
 
-        # Dual update (if there are previous domains)
+        # Line 8: Dual update - λk ← [λk + ηdsk]+, ∀k ∈ {1,...,t-1}
         if constraint_slacks:
             for domain_idx, slack in enumerate(constraint_slacks):
                 # Update dual variable: [lambda + eta_d * slack]+
@@ -194,7 +202,7 @@ class PDCL(Algorithm):
                 )
                 logger.debug(f"Updated dual var for domain {domain_idx}: {self.dual_vars[domain_idx].item()}")
 
-        # If we're moving to a new domain
+        # Line 3: Moving to next task after sufficient iterations
         if self.update_count % self.hparams.get('domain_steps', 1000) == 0:
             new_domain = self.current_domain + 1
             # Only update if the new domain is valid
@@ -202,17 +210,17 @@ class PDCL(Algorithm):
                 logger.info(f"Moving to new domain: {new_domain} (from {self.current_domain})")
                 self.current_domain = new_domain
 
-                # Partition buffer based on dual variables
+                # Line 10-11: Buffer management when moving to a new task
+                # n*1,...,n*t ← PB(λ1,...,λt-1)
+                # Bt ← FB(Bt-1, Dt, {n*k}k=1^t)
                 if self.current_domain > 1:
                     self._partition_buffer()
 
         return {'loss': loss.item()}
 
     def _update_buffer(self, domain_idx, x, y):
-        """Store examples from the current domain in the buffer (Fill Buffer operation)
-
-        This corresponds to the FB() operation in the PDCL algorithm.
-        """
+        # Implementation for the FB (Fill Buffer) operation
+        # Line 11: Bt ← FB(Bt-1, Dt, {n*k}k=1^t)
         try:
             # Only add to buffer if domain hasn't been seen before
             if domain_idx not in self.buffer:
@@ -244,15 +252,8 @@ class PDCL(Algorithm):
                 logger.info(f"Added fallback example for domain {domain_idx}")
 
     def _select_diverse_examples(self, x, num_examples):
-        """Select diverse examples based on feature space coverage.
-
-        Args:
-            x: Input tensor of shape [batch_size, ...]
-            num_examples: Number of examples to select
-
-        Returns:
-            indices: Tensor of indices of selected examples
-        """
+        # Helper method for the FB operation to select diverse examples
+        # This is an implementation detail not explicitly in the pseudocode
         try:
             # Skip diversity selection for small buffers or if num_examples is close to batch size
             if num_examples >= x.size(0) * 0.8 or num_examples <= 1:
@@ -304,12 +305,8 @@ class PDCL(Algorithm):
             return torch.randperm(x.size(0))[:num_examples]
 
     def _partition_buffer(self):
-        """Partition buffer based on dual variables (PB operation)
-
-        This corresponds to the PB() operation in the PDCL algorithm.
-        The dual variables (λ) control the importance of each constraint and
-        therefore the memory allocation for each previous domain.
-        """
+        # Implementation of the PB (Partition Buffer) operation
+        # Line 10: n*1,...,n*t ← PB(λ1,...,λt-1)
         try:
             logger.info(f"Partitioning buffer with {len(self.buffer)} domains")
 
@@ -357,11 +354,9 @@ class PDCL(Algorithm):
             # Continue with existing buffer to prevent training failure
 
     def _fill_buffer(self, partition_sizes):
-        """Fill buffer with examples according to the partition sizes (FB operation)
-
-        This corresponds to the FB() operation in the PDCL algorithm, where
-        we update B_t using B_{t-1}, D_t, and the computed buffer sizes n*_k.
-        """
+        # Implementation for the FB (Fill Buffer) operation when updating the buffer
+        # after partitioning
+        # Line 11: Bt ← FB(Bt-1, Dt, {n*k}k=1^t)
         try:
             # Update buffer with new partitions
             for domain_idx in partition_sizes:
@@ -383,6 +378,7 @@ class PDCL(Algorithm):
             # Continue with existing buffer to prevent training failure
 
     def predict(self, x):
+        # Line 13: Return θ, λ (implicitly used here for prediction)
         return self.network(x)
 
 class ERM(Algorithm):
