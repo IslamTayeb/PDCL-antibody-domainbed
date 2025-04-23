@@ -141,6 +141,10 @@ class PDCL(Algorithm):
         # Minimum examples per domain in buffer
         self.min_buffer_per_domain = 10
 
+        # For tracking dual variables evolution
+        self.dual_var_history = {i: [] for i in range(num_domains)}
+        self.iteration_history = []
+
         logger.info(f"PDCL initialized with buffer size: {self.buffer_size}, epsilon: {self.epsilon}, alpha: {self.alpha}")
 
     def update(self, minibatches, unlabeled=None):
@@ -201,6 +205,12 @@ class PDCL(Algorithm):
                     min=0.0
                 )
                 logger.debug(f"Updated dual var for domain {domain_idx}: {self.dual_vars[domain_idx].item()}")
+
+        # Track dual variables for visualization
+        self.iteration_history.append(self.update_count.item())
+        for domain_idx in range(len(self.dual_vars)):
+            if domain_idx < self.current_domain + 1:  # Only track active domains
+                self.dual_var_history[domain_idx].append(self.dual_vars[domain_idx].item())
 
         # Line 3: Moving to next task after sufficient iterations
         if self.update_count % self.hparams.get('domain_steps', 1000) == 0:
@@ -380,6 +390,83 @@ class PDCL(Algorithm):
     def predict(self, x):
         # Line 13: Return θ, λ (implicitly used here for prediction)
         return self.network(x)
+
+    def visualize_dual_variables(self, save_path=None, show=True):
+        """
+        Visualize the evolution of dual variables across training iterations.
+
+        Args:
+            save_path (str, optional): Path to save the visualization. If None, the plot won't be saved.
+            show (bool, optional): Whether to display the plot. Default is True.
+
+        Returns:
+            matplotlib.figure.Figure: The figure containing the plot.
+        """
+        try:
+            import matplotlib.pyplot as plt
+            import numpy as np
+
+            plt.figure(figsize=(10, 6))
+
+            for domain_idx in range(len(self.dual_var_history)):
+                if len(self.dual_var_history[domain_idx]) > 0:  # Only plot domains with history
+                    # Match the iterations with the dual var history
+                    x_values = self.iteration_history[:len(self.dual_var_history[domain_idx])]
+                    plt.plot(x_values, self.dual_var_history[domain_idx],
+                             label=f'Domain {domain_idx}', marker='o', markersize=3, alpha=0.7)
+
+            # Add domain transitions as vertical lines
+            domain_changes = []
+            for i in range(1, len(self.iteration_history)):
+                if i % self.hparams.get('domain_steps', 1000) == 0 and i // self.hparams.get('domain_steps', 1000) < len(self.dual_var_history):
+                    domain_changes.append(self.iteration_history[i-1])
+
+            for change in domain_changes:
+                plt.axvline(x=change, color='gray', linestyle='--', alpha=0.5)
+
+            plt.xlabel('Training Iterations')
+            plt.ylabel('Dual Variable Value (λ)')
+            plt.title('Evolution of Dual Variables Across Training')
+            plt.legend(loc='best')
+            plt.grid(True, linestyle='--', alpha=0.7)
+
+            # Add annotations for domain transitions
+            for i, change in enumerate(domain_changes):
+                plt.annotate(f'Domain {i} → {i+1}',
+                            xy=(change, 0),
+                            xytext=(change, -0.02),
+                            textcoords='data',
+                            ha='center',
+                            va='top',
+                            rotation=90,
+                            fontsize=8)
+
+            if save_path:
+                plt.savefig(save_path, dpi=300, bbox_inches='tight')
+                logger.info(f"Dual variables visualization saved to {save_path}")
+
+            if show:
+                plt.show()
+
+            return plt.gcf()
+        except ImportError as e:
+            logger.error(f"Error visualizing dual variables: {str(e)}. Make sure matplotlib is installed.")
+            return None
+        except Exception as e:
+            logger.error(f"Error visualizing dual variables: {str(e)}")
+            return None
+
+    def get_dual_variable_data(self):
+        """
+        Get the dual variable history data in a format suitable for external visualization.
+
+        Returns:
+            dict: A dictionary containing the iteration history and dual variable values for each domain.
+        """
+        return {
+            'iterations': self.iteration_history,
+            'dual_variables': self.dual_var_history
+        }
 
 class ERM(Algorithm):
     """
