@@ -3,7 +3,7 @@
 DomainBed is a PyTorch suite containing benchmark datasets and algorithms for domain generalization, as introduced in [In Search of Lost Domain Generalization](https://arxiv.org/abs/2007.01434).
 
 We extend this repo to allow for benchmarking DG algorithms for biological sequences, namely, therapeutic antibodies.
-To do so, we adjust the backbones to SeqCNN or ESM, whcih is specified  by adding the `--is_esm` flag to the train script.
+To do so, we adjust the backbones to SeqCNN or ESM, whcih is specified  by adding the `--use_esm` flag to the train script.
 
 ## Dataset
 Our dataset can be found here:

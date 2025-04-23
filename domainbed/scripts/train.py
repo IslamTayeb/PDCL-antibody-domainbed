@@ -366,22 +366,22 @@ if __name__ == "__main__":
             visualization_dir = os.path.join(args.output_dir, 'visualizations')
             os.makedirs(visualization_dir, exist_ok=True)
 
-            # Generate dual variables visualization
+            # Dual variables visualization
             visualization_path = os.path.join(visualization_dir, 'dual_variables.png')
             algorithm.visualize_dual_variables(save_path=visualization_path, show=False)
             print(f"PDCL dual variables visualization saved to {visualization_path}")
 
-            # Generate constraint impact visualization
+            # Constraint impact visualization
             constraint_path = os.path.join(visualization_dir, 'constraint_impact.png')
             algorithm.visualize_constraint_impact(save_path=constraint_path, show=False)
             print(f"PDCL constraint impact visualization saved to {constraint_path}")
 
-            # Generate buffer impact visualization
+            # Buffer impact visualization
             buffer_path = os.path.join(visualization_dir, 'buffer_impact.png')
             algorithm.visualize_buffer_impact(save_path=buffer_path, show=False)
             print(f"PDCL buffer impact visualization saved to {buffer_path}")
 
-            # Also save raw data for further analysis
+            # Save raw data
             data_path = os.path.join(visualization_dir, 'dual_variables_data.json')
             dual_data = algorithm.get_dual_variable_data()
 
@@ -395,51 +395,9 @@ if __name__ == "__main__":
                 json.dump(serializable_data, f, indent=2)
             print(f"PDCL dual variable data saved to {data_path}")
 
-            # Create an index.html file that shows all visualizations
-            html_path = os.path.join(visualization_dir, 'index.html')
-            with open(html_path, 'w') as f:
-                f.write("""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>PDCL Visualizations</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
-                        .viz-container { margin-bottom: 40px; }
-                        img { max-width: 100%; border: 1px solid #ddd; }
-                        h1 { color: #333; }
-                        h2 { color: #555; margin-top: 30px; }
-                        p { line-height: 1.5; }
-                    </style>
-                </head>
-                <body>
-                    <h1>PDCL Visualizations</h1>
-
-                    <div class="viz-container">
-                        <h2>Dual Variables Evolution</h2>
-                        <p>This visualization shows how dual variables evolve across training iterations for different domains.</p>
-                        <img src="dual_variables.png" alt="Dual Variables Evolution">
-                    </div>
-
-                    <div class="viz-container">
-                        <h2>Impact of Constraint Level (ε)</h2>
-                        <p>This visualization shows how different constraint levels affect the stability-plasticity trade-off.</p>
-                        <img src="constraint_impact.png" alt="Constraint Impact">
-                    </div>
-
-                    <div class="viz-container">
-                        <h2>Impact of Buffer Size</h2>
-                        <p>This visualization shows how buffer size affects performance and memory requirements.</p>
-                        <img src="buffer_impact.png" alt="Buffer Impact">
-                    </div>
-                </body>
-                </html>
-                """)
-            print(f"PDCL visualization index created at {html_path}")
-
         except Exception as e:
             print(f"Warning: Failed to generate PDCL visualizations: {str(e)}")
-            # Try a fallback visualization in current directory
+            # Try fallback visualization
             try:
                 algorithm.visualize_dual_variables(save_path="pdcl_dual_variables.png", show=False)
                 algorithm.visualize_constraint_impact(save_path="pdcl_constraint_impact.png", show=False)
