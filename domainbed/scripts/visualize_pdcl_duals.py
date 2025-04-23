@@ -72,7 +72,7 @@ if __name__ == "__main__":
                         checkpoint_path = os.path.join(root, file)
                         try:
                             # Check if this is a PDCL checkpoint
-                            checkpoint = torch.load(checkpoint_path)
+                            checkpoint = torch.load(checkpoint_path, weights_only=False)
                             if "args" in checkpoint and checkpoint["args"]["algorithm"] == "PDCL":
                                 checkpoints.append(checkpoint_path)
                         except Exception as e:
@@ -93,7 +93,7 @@ if __name__ == "__main__":
             print(f"Processing checkpoint: {checkpoint_path}")
 
             # Load checkpoint
-            checkpoint = torch.load(checkpoint_path)
+            checkpoint = torch.load(checkpoint_path, weights_only=False)
 
             # Extract model and its dual variable history
             model_dict = checkpoint["model_dict"]

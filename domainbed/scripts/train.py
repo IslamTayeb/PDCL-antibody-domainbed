@@ -7,6 +7,9 @@ import os
 import random
 import sys
 import time
+import matplotlib
+matplotlib.use('Agg')  # Non-interactive backend for headless servers
+import matplotlib.pyplot as plt
 from functools import partial
 
 import numpy as np
@@ -355,6 +358,41 @@ if __name__ == "__main__":
     if args.init_step:
         algorithm.save_path_for_future_init(args.path_for_init)
     save_checkpoint('model.pkl')
+
+    # Generate visualization for PDCL if applicable
+    if args.algorithm == "PDCL":
+        try:
+            print("Generating PDCL dual variable visualization...")
+            visualization_dir = os.path.join(args.output_dir, 'visualizations')
+            os.makedirs(visualization_dir, exist_ok=True)
+
+            # Use the algorithm's built-in visualization method
+            visualization_path = os.path.join(visualization_dir, 'dual_variables.png')
+            algorithm.visualize_dual_variables(save_path=visualization_path, show=False)
+            print(f"PDCL visualization saved to {visualization_path}")
+
+            # Also save raw data for further analysis
+            data_path = os.path.join(visualization_dir, 'dual_variables_data.json')
+            dual_data = algorithm.get_dual_variable_data()
+
+            # Convert data to serializable format
+            serializable_data = {
+                'iterations': dual_data['iterations'],
+                'dual_variables': {str(k): v for k, v in dual_data['dual_variables'].items()}
+            }
+
+            with open(data_path, 'w') as f:
+                json.dump(serializable_data, f, indent=2)
+            print(f"PDCL dual variable data saved to {data_path}")
+
+        except Exception as e:
+            print(f"Warning: Failed to generate PDCL visualization: {str(e)}")
+            # Try a fallback visualization in current directory
+            try:
+                algorithm.visualize_dual_variables(save_path="pdcl_dual_variables.png", show=False)
+                print("PDCL visualization saved to current directory as pdcl_dual_variables.png")
+            except Exception as e2:
+                print(f"Warning: Fallback visualization also failed: {str(e2)}")
 
     with open(os.path.join(args.output_dir, 'done'), 'w') as f:
         f.write('done')
