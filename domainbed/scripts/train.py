@@ -63,6 +63,8 @@ if __name__ == "__main__":
     parser.add_argument('--init_step', action='store_true')
     parser.add_argument('--path_for_init', type=str, default="None")
     parser.add_argument('--use_esm', action='store_true')
+    parser.add_argument('--viz', action='store_true',
+                      help='Run multiple experiments with different hyperparameters to generate comprehensive visualizations')
     args = parser.parse_args()
 
     # If we ever want to implement checkpointing, just persist these values
@@ -359,8 +361,226 @@ if __name__ == "__main__":
         algorithm.save_path_for_future_init(args.path_for_init)
     save_checkpoint('model.pkl')
 
-    # Generate visualization for PDCL if applicable
-    if args.algorithm == "PDCL":
+    # Special visualization mode: run multiple experiments with different hyperparameters
+    if args.viz and args.algorithm == "PDCL":
+        print("Visualization mode activated! Running multiple experiments to generate comprehensive visualizations...")
+
+        # Create visualization directories
+        viz_dir = os.path.join(args.output_dir, 'comprehensive_visualizations')
+        os.makedirs(viz_dir, exist_ok=True)
+
+        # Base hyperparameters from the current run
+        base_hparams = hparams.copy()
+
+        # For tracking experiment results
+        epsilon_results = {}
+        buffer_results = {}
+
+        # Save original algorithm for comparison and as baseline
+        base_algorithm = algorithm
+        baseline_epsilon = hparams['epsilon']
+        baseline_buffer_size = hparams['buffer_size']
+
+        # 1. Run experiments with different epsilon values (5000 steps each)
+        epsilon_values = [0.01, 0.03, 0.05, 0.08, 0.12, 0.2]
+        viz_steps = 5000  # Shorter run for visualization experiments
+
+        print(f"Running {len(epsilon_values)} experiments with different epsilon values...")
+        for i, eps in enumerate(epsilon_values):
+            if eps == baseline_epsilon:
+                # Skip rerunning baseline (use original results)
+                print(f"Using baseline results for epsilon = {eps}")
+                epsilon_results[eps] = {'stability': [], 'plasticity': [], 'overall': []}
+
+                # Extract performance metrics from base_algorithm
+                if hasattr(base_algorithm, 'stability_metrics') and len(base_algorithm.stability_metrics) > 0:
+                    epsilon_results[eps]['stability'] = base_algorithm.stability_metrics[-1]
+                if hasattr(base_algorithm, 'plasticity_metrics') and len(base_algorithm.plasticity_metrics) > 0:
+                    epsilon_results[eps]['plasticity'] = base_algorithm.plasticity_metrics[-1]
+                if hasattr(base_algorithm, 'overall_metrics') and len(base_algorithm.overall_metrics) > 0:
+                    epsilon_results[eps]['overall'] = base_algorithm.overall_metrics[-1]
+                continue
+
+            print(f"\nExperiment {i+1}/{len(epsilon_values)}: Running with epsilon = {eps}")
+
+            # Create experiment-specific hparams
+            exp_hparams = base_hparams.copy()
+            exp_hparams['epsilon'] = eps
+
+            # Create a new algorithm instance with the experimental epsilon
+            algorithm_class = algorithms.get_algorithm_class(args.algorithm)
+            exp_algorithm = algorithm_class(dataset.input_shape, dataset.num_classes,
+                                          len(dataset) - len(args.test_envs), exp_hparams)
+            exp_algorithm.to(device)
+
+            # Create a new optimizer for this experiment
+            exp_optimizer = torch.optim.Adam(
+                exp_algorithm.network.parameters(),
+                lr=exp_hparams["primal_lr"],
+                weight_decay=exp_hparams['weight_decay']
+            )
+
+            # Train for viz_steps (limited training for visualization)
+            train_minibatches_iterator = zip(*train_loaders)
+            for step in range(viz_steps):
+                if step % 500 == 0:
+                    print(f"  Step {step}/{viz_steps}...")
+
+                minibatches_device = [(x, y) for x, y in next(train_minibatches_iterator)]
+                if args.use_esm:
+                    try:
+                        minibatches_device = pad_x(
+                            minibatches_device,
+                            padding_idx=exp_algorithm.featurizer.alphabet.padding_idx)
+                    except:
+                        minibatches_device = pad_x(
+                            minibatches_device,
+                            padding_idx=exp_algorithm.network.featurizer.alphabet.padding_idx)
+
+                minibatches_device = [(x.to(device), y.to(device)) for x, y in minibatches_device]
+                exp_algorithm.update(minibatches_device, None)
+
+            # Record final performance metrics
+            epsilon_results[eps] = {'stability': [], 'plasticity': [], 'overall': []}
+
+            if hasattr(exp_algorithm, 'stability_metrics') and len(exp_algorithm.stability_metrics) > 0:
+                epsilon_results[eps]['stability'] = exp_algorithm.stability_metrics[-1]
+            if hasattr(exp_algorithm, 'plasticity_metrics') and len(exp_algorithm.plasticity_metrics) > 0:
+                epsilon_results[eps]['plasticity'] = exp_algorithm.plasticity_metrics[-1]
+            if hasattr(exp_algorithm, 'overall_metrics') and len(exp_algorithm.overall_metrics) > 0:
+                epsilon_results[eps]['overall'] = exp_algorithm.overall_metrics[-1]
+
+            # Clean up to free memory
+            del exp_algorithm
+            del exp_optimizer
+            torch.cuda.empty_cache()
+
+        # 2. Run experiments with different buffer sizes (5000 steps each)
+        buffer_sizes = [50, 100, 200, 500, 1000]
+
+        print(f"\nRunning {len(buffer_sizes)} experiments with different buffer sizes...")
+        for i, buffer_size in enumerate(buffer_sizes):
+            if buffer_size == baseline_buffer_size:
+                # Skip rerunning baseline (use original results)
+                print(f"Using baseline results for buffer_size = {buffer_size}")
+                buffer_results[buffer_size] = {'overall': []}
+
+                # Extract performance metrics from base_algorithm
+                if hasattr(base_algorithm, 'overall_metrics') and len(base_algorithm.overall_metrics) > 0:
+                    buffer_results[buffer_size]['overall'] = base_algorithm.overall_metrics[-1]
+                continue
+
+            print(f"\nExperiment {i+1}/{len(buffer_sizes)}: Running with buffer_size = {buffer_size}")
+
+            # Create experiment-specific hparams
+            exp_hparams = base_hparams.copy()
+            exp_hparams['buffer_size'] = buffer_size
+
+            # Create a new algorithm instance with the experimental buffer size
+            algorithm_class = algorithms.get_algorithm_class(args.algorithm)
+            exp_algorithm = algorithm_class(dataset.input_shape, dataset.num_classes,
+                                          len(dataset) - len(args.test_envs), exp_hparams)
+            exp_algorithm.to(device)
+
+            # Create a new optimizer for this experiment
+            exp_optimizer = torch.optim.Adam(
+                exp_algorithm.network.parameters(),
+                lr=exp_hparams["primal_lr"],
+                weight_decay=exp_hparams['weight_decay']
+            )
+
+            # Train for viz_steps (limited training for visualization)
+            train_minibatches_iterator = zip(*train_loaders)
+            for step in range(viz_steps):
+                if step % 500 == 0:
+                    print(f"  Step {step}/{viz_steps}...")
+
+                minibatches_device = [(x, y) for x, y in next(train_minibatches_iterator)]
+                if args.use_esm:
+                    try:
+                        minibatches_device = pad_x(
+                            minibatches_device,
+                            padding_idx=exp_algorithm.featurizer.alphabet.padding_idx)
+                    except:
+                        minibatches_device = pad_x(
+                            minibatches_device,
+                            padding_idx=exp_algorithm.network.featurizer.alphabet.padding_idx)
+
+                minibatches_device = [(x.to(device), y.to(device)) for x, y in minibatches_device]
+                exp_algorithm.update(minibatches_device, None)
+
+            # Record final performance metrics
+            buffer_results[buffer_size] = {'overall': []}
+
+            if hasattr(exp_algorithm, 'overall_metrics') and len(exp_algorithm.overall_metrics) > 0:
+                buffer_results[buffer_size]['overall'] = exp_algorithm.overall_metrics[-1]
+
+            # Clean up to free memory
+            del exp_algorithm
+            del exp_optimizer
+            torch.cuda.empty_cache()
+
+        # 3. Now let's create comprehensive visualizations
+        print("\nGenerating comprehensive visualizations...")
+
+        # Create a helper function to convert results to the format expected by visualization methods
+        def prepare_epsilon_data_for_visualization(results):
+            # Convert results into the format expected by the visualization methods
+            data = {}
+            for eps, metrics in results.items():
+                data[eps] = {
+                    'epsilon': eps,
+                    'stability': {'values': [metrics['stability']], 'mean': metrics['stability'], 'std': 0},
+                    'plasticity': {'values': [metrics['plasticity']], 'mean': metrics['plasticity'], 'std': 0},
+                    'overall': {'values': [metrics['overall']], 'mean': metrics['overall'], 'std': 0},
+                    'iterations': [viz_steps]
+                }
+            return data
+
+        def prepare_buffer_data_for_visualization(results):
+            # Convert results into the format expected by the visualization methods
+            data = {}
+            for buffer_size, metrics in results.items():
+                # Calculate memory usage based on buffer size
+                memory_usage = buffer_size * 0.5  # 0.5 MB per example is an empirical estimate
+
+                data[buffer_size] = {
+                    'buffer_size': buffer_size,
+                    'overall': {'values': [metrics['overall']], 'mean': metrics['overall'], 'std': 0},
+                    'memory_usage': memory_usage,
+                    'iterations': [viz_steps]
+                }
+            return data
+
+        # Replace the algorithm's internal data structures with our comprehensive results
+        algorithm.epsilon_performances = prepare_epsilon_data_for_visualization(epsilon_results)
+        algorithm.buffer_size_performances = prepare_buffer_data_for_visualization(buffer_results)
+
+        # Save the data
+        with open(os.path.join(viz_dir, 'epsilon_results.json'), 'w') as f:
+            json.dump({str(k): v for k, v in epsilon_results.items()}, f, indent=2)
+
+        with open(os.path.join(viz_dir, 'buffer_results.json'), 'w') as f:
+            json.dump({str(k): v for k, v in buffer_results.items()}, f, indent=2)
+
+        # Generate visualizations using the algorithm's methods
+        constraint_path = os.path.join(viz_dir, 'comprehensive_constraint_impact.png')
+        algorithm.visualize_constraint_impact(save_path=constraint_path, show=False)
+        print(f"Comprehensive constraint impact visualization saved to {constraint_path}")
+
+        buffer_path = os.path.join(viz_dir, 'comprehensive_buffer_impact.png')
+        algorithm.visualize_buffer_impact(save_path=buffer_path, show=False)
+        print(f"Comprehensive buffer impact visualization saved to {buffer_path}")
+
+        # Also generate the dual variables visualization for completeness
+        dual_path = os.path.join(viz_dir, 'dual_variables.png')
+        algorithm.visualize_dual_variables(save_path=dual_path, show=False)
+        print(f"Dual variables visualization saved to {dual_path}")
+
+        print("\nVisualization mode complete! All visualizations saved to:", viz_dir)
+
+    # Generate visualization for PDCL if applicable (standard case)
+    elif args.algorithm == "PDCL":
         try:
             print("Generating PDCL visualizations...")
             visualization_dir = os.path.join(args.output_dir, 'visualizations')

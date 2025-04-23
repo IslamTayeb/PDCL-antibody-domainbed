@@ -752,6 +752,18 @@ class PDCL(Algorithm):
                 'explanation': "Based on theoretical buffer size impact (default)"
             }
 
+    def get_dual_variable_data(self):
+        """
+        Get the dual variable history data in a format suitable for external visualization.
+
+        Returns:
+            dict: A dictionary containing the iteration history and dual variable values for each domain.
+        """
+        return {
+            'iterations': self.iteration_history,
+            'dual_variables': self.dual_var_history
+        }
+
     def visualize_constraint_impact(self, save_path=None, show=True):
         """
         Visualize the impact of different constraint levels (epsilon) on performance
