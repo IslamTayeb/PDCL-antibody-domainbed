@@ -197,8 +197,21 @@ class PDCL(Algorithm):
         self.current_loss_history.append(current_loss.item())
 
         # Calculate accuracy rigorously on entire batch
+        # Handle different target formats safely
         with torch.no_grad():
-            current_acc = (current_outputs.argmax(1) == y_current).float().mean().item()
+            # Get predictions as class indices
+            preds = current_outputs.argmax(1)
+
+            # Handle targets based on dimensionality
+            if y_current.dim() > 1 and y_current.size(1) > 1:
+                # Case where y_current has shape [batch_size, num_classes] (one-hot or multi-class)
+                targets = y_current.argmax(1)
+            else:
+                # Standard case where y_current has shape [batch_size]
+                targets = y_current
+
+            # Now compute accuracy
+            current_acc = (preds == targets).float().mean().item()
             self.plasticity_metrics.append(current_acc)
 
         # Line 7: Evaluate constraint slacks
@@ -215,7 +228,19 @@ class PDCL(Algorithm):
 
                 # Proper accuracy calculation for previous domains
                 with torch.no_grad():
-                    prev_acc = (prev_outputs.argmax(1) == y_prev).float().mean().item()
+                    # Get predictions as class indices
+                    preds = prev_outputs.argmax(1)
+
+                    # Handle targets based on dimensionality
+                    if y_prev.dim() > 1 and y_prev.size(1) > 1:
+                        # Case where y_prev has shape [batch_size, num_classes] (one-hot or multi-class)
+                        targets = y_prev.argmax(1)
+                    else:
+                        # Standard case where y_prev has shape [batch_size]
+                        targets = y_prev
+
+                    # Now compute accuracy
+                    prev_acc = (preds == targets).float().mean().item()
                     prev_domain_accs.append(prev_acc)
 
                     # Update domain-specific validation metrics
