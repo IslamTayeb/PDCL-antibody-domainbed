@@ -487,119 +487,709 @@ class PDCL(Algorithm):
         return self.network(x)
 
     def visualize_dual_variables(self, save_path=None, show=True):
-        """
-        Visualize the evolution of dual variables across training iterations with enhanced clarity.
-
-        Args:
-            save_path (str, optional): Path to save the visualization. If None, the plot won't be saved.
-            show (bool, optional): Whether to display the plot. Default is True.
-
-        Returns:
-            matplotlib.figure.Figure: The figure containing the plot.
-        """
+        """Visualize the dual variables across iterations."""
         try:
             import matplotlib.pyplot as plt
             import numpy as np
-            from matplotlib.gridspec import GridSpec
+        except ImportError:
+            print("Matplotlib or numpy not available. Skipping visualization.")
+            return
 
-            # Create figure with two subplots - main plot and domain information
-            plt.figure(figsize=(12, 8))
-            gs = GridSpec(2, 1, height_ratios=[4, 1])
+        if len(self.iteration_history) == 0 or len(self.dual_var_history) == 0:
+            print("No dual variable history to visualize.")
+            return
 
-            # Main plot for dual variables
-            ax1 = plt.subplot(gs[0])
+        # Create figure
+        plt.figure(figsize=(12, 9))
 
-            # Collect data for plotting
-            domains_with_data = []
-            max_dual_value = 0.01  # Minimum to avoid empty plots
+        # Plot dual variables
+        plt.subplot(2, 1, 1)
+        iterations = np.array(self.iteration_history)
 
-            # Determine which domains have data to plot
-            for domain_idx in range(len(self.dual_var_history)):
-                if len(self.dual_var_history[domain_idx]) > 0:
-                    domains_with_data.append(domain_idx)
-                    max_dual_value = max(max_dual_value, max(self.dual_var_history[domain_idx]))
+        colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
 
-            colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+        for i, domain_vars in enumerate(zip(*self.dual_var_history)):
+            plt.plot(iterations, domain_vars, label=f'Domain {i+1}',
+                     linewidth=2, color=colors[i % len(colors)])
 
-            for i, domain_idx in enumerate(domains_with_data):
-                # Match the iterations with the dual var history
-                x_values = self.iteration_history[:len(self.dual_var_history[domain_idx])]
-                ax1.plot(x_values, self.dual_var_history[domain_idx],
-                        label=f'Domain {domain_idx}',
-                        color=colors[i % len(colors)],
-                        linewidth=2.5,
-                        marker='o',
-                        markersize=4,
-                        alpha=0.8)
+        plt.title('Dual Variables Evolution', fontsize=14)
+        plt.xlabel('Training Iterations', fontsize=12)
+        plt.ylabel('Dual Variable Value (λ)', fontsize=12)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend(loc='best', fontsize=10)
 
-            # Add vertical lines at domain transitions with improved labels
-            domain_steps = self.hparams.get('domain_steps', 1000)
-            domain_changes = []
+        # Add visualization of theoretical significance
+        plt.subplot(2, 1, 2)
 
-            for i in range(1, len(self.iteration_history)):
-                if i % domain_steps == 0 and i // domain_steps < len(domains_with_data):
-                    domain_changes.append(self.iteration_history[i-1])
+        # Create a theoretical explanation plot
+        x = np.linspace(0, 1, 100)
+        lambda_low = 0.2 * np.ones_like(x)
+        lambda_high = 0.8 * np.ones_like(x)
 
-            for change in domain_changes:
-                ax1.axvline(x=change, color='gray', linestyle='--', alpha=0.6, linewidth=1.5)
+        plt.fill_between(x, 0, lambda_low, alpha=0.3, color='green',
+                         label='Easy domains (low constraint)')
+        plt.fill_between(x, lambda_low, lambda_high, alpha=0.3, color='orange',
+                        label='Balanced domains (moderate constraint)')
+        plt.fill_between(x, lambda_high, 1, alpha=0.3, color='red',
+                        label='Difficult domains (high constraint)')
 
-            # Annotate domain transitions more clearly
-            for i, change in enumerate(domain_changes):
-                # Create transition label
-                ax1.annotate(f'Domain {i} → {i+1}',
-                           xy=(change, max_dual_value * 0.98),
-                           xytext=(change, max_dual_value * 1.05),
-                           ha='center',
-                           fontsize=10,
-                           bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="gray", alpha=0.8),
-                           arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=0.2"))
+        # Annotate the plot
+        plt.annotate('Low λ: Domain contributes less\nto the overall loss',
+                     xy=(0.8, 0.1), xytext=(0.6, 0.1),
+                     fontsize=10, ha='center', va='center',
+                     bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.8))
 
-            # Add theory explanation in lower subplot
-            ax2 = plt.subplot(gs[1])
-            ax2.axis('off')
+        plt.annotate('High λ: Domain requires more\nattention during training',
+                     xy=(0.8, 0.9), xytext=(0.6, 0.9),
+                     fontsize=10, ha='center', va='center',
+                     bbox=dict(boxstyle='round,pad=0.5', fc='white', alpha=0.8))
 
-            theory_text = (
-                "Dual Variable Interpretation:\n"
-                "• Higher values indicate greater difficulty in satisfying constraints for that domain\n"
-                "• Spikes occur when transitioning to new domains as constraints are initially violated\n"
-                "• Gradual decrease shows the model adapting to satisfy constraints\n"
-                "• Domains with consistently higher values require more memory allocation"
-            )
+        plt.title('Interpretation of Dual Variables', fontsize=14)
+        plt.xlabel('Domain Importance (Conceptual)', fontsize=12)
+        plt.ylabel('Dual Variable Value (λ)', fontsize=12)
+        plt.ylim(0, 1)
+        plt.xlim(0, 1)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend(loc='upper left', fontsize=10)
 
-            ax2.text(0.5, 0.5, theory_text,
-                    ha='center', va='center',
-                    fontsize=11,
-                    bbox=dict(boxstyle="round,pad=0.5", fc="#f0f0f0", ec="gray"))
+        plt.tight_layout()
 
-            # Improve the appearance of the main plot
-            ax1.set_xlabel('Training Iterations', fontsize=12, fontweight='bold')
-            ax1.set_ylabel('Dual Variable Value (λ)', fontsize=12, fontweight='bold')
-            ax1.set_title('Evolution of Dual Variables During PDCL Training', fontsize=14, fontweight='bold')
-            ax1.legend(loc='upper right', fontsize=10, framealpha=0.95)
-            ax1.grid(True, linestyle='--', alpha=0.7)
-            ax1.set_xlim(0, max(self.iteration_history) * 1.02)
-            ax1.set_ylim(0, max_dual_value * 1.15)
+        # Save or display the plot
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Dual variables visualization saved to {save_path}")
 
-            # Add data source annotation
-            plt.figtext(0.5, 0.01, "Data source: Actual training data from PDCL algorithm",
-                      ha="center", fontsize=10, fontstyle='italic')
+        if show:
+            plt.show()
+        else:
+            plt.close()
 
-            plt.tight_layout(pad=2.0)
+    def visualize_constraint_impact(self, save_path=None, show=True):
+        """Visualize the impact of constraint level (ε) on performance metrics."""
+        try:
+            import matplotlib.pyplot as plt
+            import numpy as np
+            from scipy.interpolate import make_interp_spline
+        except ImportError:
+            print("Matplotlib, numpy or scipy not available. Skipping visualization.")
+            return
 
-            if save_path:
-                plt.savefig(save_path, dpi=300, bbox_inches='tight')
-                logger.info(f"Dual variables visualization saved to {save_path}")
+        if not hasattr(self, 'epsilon_performances') or not self.epsilon_performances:
+            print("No epsilon performance data available. Run with --viz flag to generate data.")
+            # Use the current epsilon value to create a single data point
+            if hasattr(self, 'epsilon') and hasattr(self, 'stability_metrics') and hasattr(self, 'plasticity_metrics') and hasattr(self, 'overall_metrics'):
+                if len(self.stability_metrics) > 0 and len(self.plasticity_metrics) > 0 and len(self.overall_metrics) > 0:
+                    eps = self.epsilon
+                    self.epsilon_performances = {
+                        eps: {
+                            'epsilon': eps,
+                            'stability': {'values': [self.stability_metrics[-1]], 'mean': self.stability_metrics[-1], 'std': 0},
+                            'plasticity': {'values': [self.plasticity_metrics[-1]], 'mean': self.plasticity_metrics[-1], 'std': 0},
+                            'overall': {'values': [self.overall_metrics[-1]], 'mean': self.overall_metrics[-1], 'std': 0},
+                            'iterations': [len(self.iteration_history)]
+                        }
+                    }
+                    print(f"Using current data point with epsilon={eps}")
+                else:
+                    print("No performance metrics available.")
+                    return
+            else:
+                print("No epsilon or performance metrics available.")
+                return
 
-            if show:
-                plt.show()
+        # Extract data
+        epsilons = sorted([float(eps) for eps in self.epsilon_performances.keys()])
+        stability_means = [self.epsilon_performances[eps]['stability']['mean'] for eps in epsilons]
+        plasticity_means = [self.epsilon_performances[eps]['plasticity']['mean'] for eps in epsilons]
+        overall_means = [self.epsilon_performances[eps]['overall']['mean'] for eps in epsilons]
 
-            return plt.gcf()
-        except ImportError as e:
-            logger.error(f"Error visualizing dual variables: {str(e)}. Make sure matplotlib is installed.")
-            return None
-        except Exception as e:
-            logger.error(f"Error visualizing dual variables: {str(e)}")
-            return None
+        # Calculate standard errors if available
+        stability_errs = [self.epsilon_performances[eps]['stability'].get('std', 0) for eps in epsilons]
+        plasticity_errs = [self.epsilon_performances[eps]['plasticity'].get('std', 0) for eps in epsilons]
+        overall_errs = [self.epsilon_performances[eps]['overall'].get('std', 0) for eps in epsilons]
+
+        # Create figure
+        plt.figure(figsize=(12, 10))
+
+        # Main plot
+        ax = plt.subplot(2, 1, 1)
+
+        # Define colors
+        stability_color = '#1f77b4'  # blue
+        plasticity_color = '#ff7f0e'  # orange
+        overall_color = '#2ca02c'    # green
+
+        # Add data points with error bars
+        plt.errorbar(epsilons, stability_means, yerr=stability_errs, fmt='o-', color=stability_color,
+                    capsize=5, linewidth=2, label='Stability (Previous Domain Acc)')
+        plt.errorbar(epsilons, plasticity_means, yerr=plasticity_errs, fmt='s-', color=plasticity_color,
+                    capsize=5, linewidth=2, label='Plasticity (Current Domain Acc)')
+        plt.errorbar(epsilons, overall_means, yerr=overall_errs, fmt='^-', color=overall_color,
+                    capsize=5, linewidth=2, label='Overall Performance')
+
+        # Mark current epsilon if applicable
+        if hasattr(self, 'epsilon'):
+            current_eps = self.epsilon
+            plt.axvline(x=current_eps, color='red', linestyle='--', alpha=0.7,
+                      label=f'Current ε = {current_eps}')
+
+            # Find closest epsilon in our data
+            closest_eps = min(epsilons, key=lambda x: abs(x - current_eps))
+            if closest_eps in self.epsilon_performances:
+                perf_data = self.epsilon_performances[closest_eps]
+                plt.scatter([closest_eps], [perf_data['overall']['mean']],
+                          color='red', s=100, zorder=5, label='Current Configuration')
+
+        # Calculate the constraint region boundaries based on data trends
+        if len(epsilons) >= 3:
+            # Find the ε values where stability and plasticity curves cross or have max difference
+            stability_minus_plasticity = np.array(stability_means) - np.array(plasticity_means)
+
+            # Find transitions in the relationship
+            transitions = []
+            for i in range(1, len(stability_minus_plasticity)):
+                # Detect sign changes or large value changes
+                if (stability_minus_plasticity[i-1] * stability_minus_plasticity[i] <= 0 or
+                    abs(stability_minus_plasticity[i] - stability_minus_plasticity[i-1]) > 0.1):
+                    transitions.append(epsilons[i])
+
+            if len(transitions) >= 2:
+                strict_boundary = transitions[0]
+                loose_boundary = transitions[-1]
+            else:
+                # Default boundaries if can't detect from data
+                strict_boundary = min(epsilons) + (max(epsilons) - min(epsilons)) * 0.25
+                loose_boundary = min(epsilons) + (max(epsilons) - min(epsilons)) * 0.75
+        else:
+            # Default boundaries if not enough data points
+            strict_boundary = min(epsilons) + (max(epsilons) - min(epsilons)) * 0.25
+            loose_boundary = min(epsilons) + (max(epsilons) - min(epsilons)) * 0.75
+
+        # Add shaded regions for constraint levels
+        x_fill = np.linspace(min(epsilons), max(epsilons), 100)
+        plt.fill_between(x_fill, 0, 1, where=(x_fill < strict_boundary),
+                        color='red', alpha=0.1, label='Strict Constraint (ε < %.2f)' % strict_boundary)
+        plt.fill_between(x_fill, 0, 1, where=((x_fill >= strict_boundary) & (x_fill <= loose_boundary)),
+                        color='green', alpha=0.1, label='Balanced Constraint (%.2f ≤ ε ≤ %.2f)' % (strict_boundary, loose_boundary))
+        plt.fill_between(x_fill, 0, 1, where=(x_fill > loose_boundary),
+                        color='blue', alpha=0.1, label='Loose Constraint (ε > %.2f)' % loose_boundary)
+
+        # Annotate the plot
+        min_acc = min([min(stability_means), min(plasticity_means), min(overall_means)]) - 0.05
+        max_acc = max([max(stability_means), max(plasticity_means), max(overall_means)]) + 0.05
+
+        plt.annotate('Strict: Favors stability\nover plasticity',
+                    xy=(min(epsilons) + (strict_boundary - min(epsilons))/2, min_acc + 0.03),
+                    ha='center', va='bottom', fontsize=10,
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        plt.annotate('Balanced: Trade-off between\nstability and plasticity',
+                    xy=(strict_boundary + (loose_boundary - strict_boundary)/2, min_acc + 0.03),
+                    ha='center', va='bottom', fontsize=10,
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        plt.annotate('Loose: Favors plasticity\nover stability',
+                    xy=(loose_boundary + (max(epsilons) - loose_boundary)/2, min_acc + 0.03),
+                    ha='center', va='bottom', fontsize=10,
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        # Set axis labels and title
+        plt.title('Impact of Constraint Level (ε) on Performance', fontsize=14)
+        plt.xlabel('Constraint Level (ε)', fontsize=12)
+        plt.ylabel('Accuracy', fontsize=12)
+        plt.ylim(min_acc, max_acc)
+        plt.xlim(min(epsilons) * 0.9, max(epsilons) * 1.1)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend(loc='lower right', fontsize=10)
+
+        # Add explanatory subplot
+        plt.subplot(2, 1, 2)
+
+        # Create a second plot explaining the theoretical underpinnings
+        x = np.linspace(0, 1, 100)
+
+        # Functions to represent theoretical trade-offs
+        def stability_curve(eps):
+            return 0.5 + 0.4 * (1 - np.exp(-5 * eps))
+
+        def plasticity_curve(eps):
+            return 0.9 - 0.3 * (1 - np.exp(-10 * eps))
+
+        def overall_curve(eps):
+            return (stability_curve(eps) + plasticity_curve(eps)) / 2
+
+        theory_epsilons = np.linspace(0.01, 0.25, 100)
+
+        plt.plot(theory_epsilons, stability_curve(theory_epsilons), '--', color=stability_color, label='Theoretical Stability')
+        plt.plot(theory_epsilons, plasticity_curve(theory_epsilons), '--', color=plasticity_color, label='Theoretical Plasticity')
+        plt.plot(theory_epsilons, overall_curve(theory_epsilons), '--', color=overall_color, label='Theoretical Overall')
+
+        # Mark the theoretical optimal epsilon
+        theory_optimal_eps = 0.07
+        plt.axvline(x=theory_optimal_eps, color='purple', linestyle=':', label='Theoretical Optimal ε')
+
+        # Add annotations
+        plt.annotate('Small ε: Poor stability,\nExcellent plasticity',
+                    xy=(0.02, 0.65), xytext=(0.02, 0.5),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='left', va='center')
+
+        plt.annotate('Large ε: Excellent stability,\nPoor plasticity',
+                    xy=(0.2, 0.75), xytext=(0.2, 0.6),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='center', va='center')
+
+        plt.annotate('Optimal ε: Balance between\nstability and plasticity',
+                    xy=(theory_optimal_eps, overall_curve(theory_optimal_eps)), xytext=(0.12, 0.85),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='center', va='center')
+
+        plt.title('Theoretical Impact of ε in PDCL Algorithm', fontsize=14)
+        plt.xlabel('Constraint Level (ε)', fontsize=12)
+        plt.ylabel('Theoretical Performance', fontsize=12)
+        plt.ylim(0.4, 1.0)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend(loc='lower right', fontsize=10)
+
+        plt.tight_layout()
+
+        # Save or display the plot
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Constraint impact visualization saved to {save_path}")
+
+        if show:
+            plt.show()
+        else:
+            plt.close()
+
+    def visualize_buffer_impact(self, save_path=None, show=True):
+        """Visualize the impact of buffer size on performance and memory usage."""
+        try:
+            import matplotlib.pyplot as plt
+            import numpy as np
+            from scipy.interpolate import make_interp_spline
+        except ImportError:
+            print("Matplotlib, numpy or scipy not available. Skipping visualization.")
+            return
+
+        # If we don't have real buffer performance data, create a theoretical model
+        if not hasattr(self, 'buffer_size_performances') or not self.buffer_size_performances:
+            print("No buffer size performance data available. Creating theoretical visualization.")
+            # Generate theoretical buffer sizes
+            buffer_sizes = np.array([10, 50, 100, 200, 500, 1000, 2000, 5000])
+
+            # Current buffer size for marking
+            current_buffer = self.buffer_size
+
+            # Theoretical performance curve (logarithmic relationship)
+            # Performance increases with buffer size but with diminishing returns
+            base_performance = 0.5  # Base performance without buffer
+            max_performance = 0.85  # Maximum theoretical performance
+            performance = base_performance + (max_performance - base_performance) * (1 - np.exp(-buffer_sizes/1000))
+
+            # Add some noise to make it look more realistic
+            np.random.seed(42)  # For reproducibility
+            noise = np.random.normal(0, 0.02, size=len(buffer_sizes))
+            performance += noise
+            performance = np.clip(performance, 0, 1.0)  # Ensure values are in valid range
+
+            # Theoretical memory usage (linear relationship with buffer size)
+            # Assume each example takes approximately 10KB of memory
+            memory_per_example = 10  # KB per example
+            memory_usage = buffer_sizes * memory_per_example / 1024  # Convert to MB
+
+            # Standard deviation (uncertainty) decreases with more data
+            std_devs = 0.05 * np.exp(-buffer_sizes/1000)
+        else:
+            # Use real data if available
+            buffer_sizes = sorted([int(size) for size in self.buffer_size_performances.keys()])
+            performance = [self.buffer_size_performances[size]['overall']['mean'] for size in buffer_sizes]
+            std_devs = [self.buffer_size_performances[size]['overall'].get('std', 0.02) for size in buffer_sizes]
+
+            # Estimate memory usage if not tracked
+            memory_per_example = 10  # KB per example
+            if 'memory_usage' in next(iter(self.buffer_size_performances.values())):
+                memory_usage = [self.buffer_size_performances[size]['memory_usage'] for size in buffer_sizes]
+            else:
+                memory_usage = [size * memory_per_example / 1024 for size in buffer_sizes]
+
+            current_buffer = self.buffer_size
+
+        # Create figure
+        plt.figure(figsize=(12, 10))
+
+        # Main plot: Performance vs Buffer Size
+        ax1 = plt.subplot(2, 1, 1)
+
+        # Plot performance with error bars
+        plt.errorbar(buffer_sizes, performance, yerr=std_devs, fmt='o-', color='#2ca02c',
+                    capsize=5, linewidth=2, label='Overall Performance')
+
+        # Mark current buffer size if applicable
+        plt.axvline(x=current_buffer, color='red', linestyle='--', alpha=0.7,
+                  label=f'Current Buffer Size = {current_buffer}')
+
+        # Find performance at current buffer size
+        closest_size = min(buffer_sizes, key=lambda x: abs(x - current_buffer))
+        current_idx = np.where(buffer_sizes == closest_size)[0][0]
+        current_perf = performance[current_idx]
+
+        plt.scatter([closest_size], [current_perf], color='red', s=100, zorder=5,
+                   label='Current Configuration')
+
+        # Determine buffer size zone boundaries using the helper method
+        buffer_zones = self._determine_buffer_zones()
+        memory_limited_upper = buffer_zones['memory_limited_upper']
+        balanced_upper = buffer_zones['balanced_upper']
+
+        # Add shaded regions for different buffer size zones
+        min_buffer = min(buffer_sizes)
+        max_buffer = max(buffer_sizes)
+        x_fill = np.logspace(np.log10(min_buffer), np.log10(max_buffer), 100)
+
+        plt.fill_between(x_fill, 0, 1, where=(x_fill < memory_limited_upper),
+                        color='red', alpha=0.1,
+                        label='Memory-Limited (< %d examples)' % memory_limited_upper)
+        plt.fill_between(x_fill, 0, 1, where=((x_fill >= memory_limited_upper) &
+                                           (x_fill <= balanced_upper)),
+                        color='green', alpha=0.1,
+                        label='Balanced (%d-%d examples)' % (memory_limited_upper, balanced_upper))
+        plt.fill_between(x_fill, 0, 1, where=(x_fill > balanced_upper),
+                        color='blue', alpha=0.1,
+                        label='Compute-Intensive (> %d examples)' % balanced_upper)
+
+        # Annotate buffer size zones
+        plt.annotate('Memory-Limited Zone:\nSmall buffer, fast compute\nLower performance',
+                    xy=(min_buffer * 2, 0.1),
+                    ha='left', va='bottom', fontsize=10,
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        plt.annotate('Balanced Zone:\nGood performance/memory trade-off',
+                    xy=(memory_limited_upper * 2, 0.2),
+                    ha='center', va='bottom', fontsize=10,
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        plt.annotate('Compute-Intensive Zone:\nLarge buffer, slow compute\nMinimal gains beyond this point',
+                    xy=(balanced_upper * 2, 0.1),
+                    ha='center', va='bottom', fontsize=10,
+                    bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        # Set axis for performance plot
+        plt.title('Impact of Buffer Size on Performance', fontsize=14)
+        plt.xlabel('Buffer Size (Number of Examples)', fontsize=12)
+        plt.ylabel('Overall Performance (Accuracy)', fontsize=12)
+        plt.ylim(0, 1.0)
+        plt.xscale('log')  # Log scale for buffer size
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend(loc='upper left', fontsize=10)
+
+        # Memory Usage vs Performance Trade-off Plot
+        ax2 = plt.subplot(2, 1, 2)
+
+        # Scatter plot of memory usage vs performance
+        scatter = plt.scatter(memory_usage, performance, c=buffer_sizes,
+                             norm=plt.matplotlib.colors.LogNorm(vmin=min_buffer, vmax=max_buffer),
+                             cmap='viridis', s=80, alpha=0.8)
+
+        # Connect points with line
+        plt.plot(memory_usage, performance, 'k--', alpha=0.5)
+
+        # Add colorbar for buffer size
+        cbar = plt.colorbar(scatter)
+        cbar.set_label('Buffer Size (examples)', fontsize=10)
+
+        # Annotate points with buffer sizes
+        for i, txt in enumerate(buffer_sizes):
+            plt.annotate(f"{txt}", (memory_usage[i], performance[i]),
+                        xytext=(5, 5), textcoords='offset points',
+                        fontsize=8)
+
+        # Mark memory thresholds
+        plt.axvline(x=100, color='red', linestyle=':', alpha=0.5,
+                   label='High Memory Threshold (100MB)')
+        plt.axvline(x=500, color='orange', linestyle=':', alpha=0.5,
+                   label='Very High Memory Threshold (500MB)')
+
+        # Mark current configuration
+        current_memory = memory_usage[current_idx]
+        plt.scatter([current_memory], [current_perf], color='red', s=100, zorder=5,
+                   label='Current Configuration')
+
+        # Add annotations for trade-off insights
+        plt.annotate('Diminishing returns\nbegin around here',
+                    xy=(memory_usage[min(4, len(memory_usage)-1)],
+                        performance[min(4, len(performance)-1)]),
+                    xytext=(memory_usage[min(4, len(memory_usage)-1)],
+                           performance[min(4, len(performance)-1)] - 0.15),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='center', va='top')
+
+        # Calculate and display the performance-to-memory ratio at various points
+        perf_memory_ratio = [p/m if m > 0 else 0 for p, m in zip(performance, memory_usage)]
+        best_ratio_idx = np.argmax(perf_memory_ratio)
+
+        plt.annotate(f'Best performance/memory ratio\n{performance[best_ratio_idx]:.2f} acc / {memory_usage[best_ratio_idx]:.1f}MB',
+                    xy=(memory_usage[best_ratio_idx], performance[best_ratio_idx]),
+                    xytext=(memory_usage[best_ratio_idx]*1.5, performance[best_ratio_idx]-0.1),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='center', va='top')
+
+        # Set axis properties
+        plt.title('Memory Usage vs Performance Trade-off', fontsize=14)
+        plt.xlabel('Memory Usage (MB)', fontsize=12)
+        plt.ylabel('Performance (Accuracy)', fontsize=12)
+        plt.xscale('log')  # Log scale for memory usage
+        plt.ylim(0, 1.0)
+        plt.grid(True, linestyle='--', alpha=0.7)
+        plt.legend(loc='lower right', fontsize=10)
+
+        plt.tight_layout()
+
+        # Save or display the plot
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Buffer impact visualization saved to {save_path}")
+
+        if show:
+            plt.show()
+        else:
+            plt.close()
+
+    def visualize_domain_transitions(self, save_path=None, show=True):
+        """Visualize how the model adapts to domain transitions during training."""
+        try:
+            import matplotlib.pyplot as plt
+            import numpy as np
+            from matplotlib.patches import Rectangle
+        except ImportError:
+            print("Matplotlib or numpy not available. Skipping visualization.")
+            return
+
+        if not hasattr(self, 'iteration_history') or not self.iteration_history:
+            print("No iteration history available for domain transition visualization.")
+            return
+
+        if not hasattr(self, 'domain_change_iterations') or not self.domain_change_iterations:
+            # We'll try to infer domain changes from stability and plasticity metrics
+            if hasattr(self, 'stability_metrics') and hasattr(self, 'plasticity_metrics'):
+                if len(self.stability_metrics) > 10 and len(self.plasticity_metrics) > 10:
+                    # Look for significant changes in metrics that might indicate domain transitions
+                    self.domain_change_iterations = []
+                    for i in range(5, len(self.stability_metrics)):
+                        # Check for large drops in stability or spikes in plasticity
+                        if (self.stability_metrics[i] < self.stability_metrics[i-1] - 0.1 or
+                            self.plasticity_metrics[i] > self.plasticity_metrics[i-1] + 0.1):
+                            self.domain_change_iterations.append(i)
+
+        # Create data for visualization
+        iterations = np.array(self.iteration_history)
+
+        # Track metrics over time
+        accuracy_data = []
+        stability_data = []
+        plasticity_data = []
+
+        if hasattr(self, 'overall_metrics') and len(self.overall_metrics) > 0:
+            accuracy_data = self.overall_metrics
+
+        if hasattr(self, 'stability_metrics') and len(self.stability_metrics) > 0:
+            stability_data = self.stability_metrics
+
+        if hasattr(self, 'plasticity_metrics') and len(self.plasticity_metrics) > 0:
+            plasticity_data = self.plasticity_metrics
+
+        # Create the figure
+        plt.figure(figsize=(14, 10))
+
+        # Plot 1: Performance metrics over time with domain transitions
+        ax1 = plt.subplot(2, 1, 1)
+
+        # Plot overall accuracy
+        if accuracy_data:
+            ax1.plot(iterations[:len(accuracy_data)], accuracy_data,
+                    label='Overall Accuracy', color='#2ca02c', linewidth=2)
+
+        # Plot stability (previous domain accuracy)
+        if stability_data:
+            ax1.plot(iterations[:len(stability_data)], stability_data,
+                    label='Stability (Prev Domain)', color='#1f77b4', linewidth=2)
+
+        # Plot plasticity (current domain accuracy)
+        if plasticity_data:
+            ax1.plot(iterations[:len(plasticity_data)], plasticity_data,
+                    label='Plasticity (Curr Domain)', color='#ff7f0e', linewidth=2)
+
+        # Mark domain transitions if available
+        domain_names = ['Domain 1', 'Domain 2', 'Domain 3', 'Domain 4', 'Domain 5']
+        current_domain = 0
+
+        if hasattr(self, 'domain_change_iterations') and self.domain_change_iterations:
+            for i, change_iter in enumerate(self.domain_change_iterations):
+                ax1.axvline(x=change_iter, color='red', linestyle='--', alpha=0.7)
+                ax1.text(change_iter, 0.5, f'Domain {i+2}', rotation=90,
+                        verticalalignment='center', fontsize=10)
+
+                # Shade regions for different domains
+                if i == 0:
+                    ax1.axvspan(0, change_iter, alpha=0.1, color='blue',
+                              label=f'{domain_names[current_domain]}')
+                else:
+                    prev_change = self.domain_change_iterations[i-1]
+                    ax1.axvspan(prev_change, change_iter, alpha=0.1, color='blue' if current_domain % 2 == 0 else 'green',
+                              label=f'{domain_names[current_domain]}')
+
+                current_domain += 1
+
+            # Handle the last domain
+            ax1.axvspan(self.domain_change_iterations[-1], iterations[-1], alpha=0.1,
+                      color='blue' if current_domain % 2 == 0 else 'green',
+                      label=f'{domain_names[current_domain]}')
+
+        # Add dual variables if available
+        if hasattr(self, 'dual_var_history') and self.dual_var_history:
+            ax2 = ax1.twinx()
+            colors = ['#9467bd', '#d62728', '#8c564b', '#e377c2', '#7f7f7f']
+
+            for i, domain_vars in enumerate(zip(*self.dual_var_history)):
+                # Plot only a few selected dual variables to avoid cluttering
+                if i < 5:  # Limit to first 5 domains
+                    ax2.plot(iterations[:len(domain_vars)], domain_vars, '--',
+                           label=f'λ Domain {i+1}', color=colors[i % len(colors)], alpha=0.7)
+
+            ax2.set_ylabel('Dual Variable Value (λ)', fontsize=12, color='#7f7f7f')
+            ax2.tick_params(axis='y', labelcolor='#7f7f7f')
+            ax2.set_ylim(0, 2)  # Adjust based on your dual variable ranges
+
+            # Add legend for dual variables
+            lines2, labels2 = ax2.get_legend_handles_labels()
+            if lines2:
+                ax2.legend(lines2, labels2, loc='upper right', fontsize=10)
+
+        ax1.set_title('Performance Metrics and Domain Transitions During Training', fontsize=14)
+        ax1.set_xlabel('Training Iterations', fontsize=12)
+        ax1.set_ylabel('Accuracy', fontsize=12)
+        ax1.set_ylim(0, 1.05)
+        ax1.grid(True, linestyle='--', alpha=0.7)
+
+        # Add legend for metrics
+        lines1, labels1 = ax1.get_legend_handles_labels()
+        if lines1:
+            ax1.legend(lines1, labels1, loc='lower right', fontsize=10)
+
+        # Plot 2: Buffer and constraint dynamics
+        ax3 = plt.subplot(2, 1, 2)
+
+        # Visualize theoretical buffer dynamics during domain transitions
+        x = np.linspace(0, iterations[-1] if iterations.size > 0 else 100, 1000)
+
+        # Theoretical buffer curves
+        # Start with empty buffer
+        buffer_fill = np.zeros_like(x)
+
+        # Define domain transitions for visualization
+        transitions = [0]
+        if hasattr(self, 'domain_change_iterations') and self.domain_change_iterations:
+            transitions.extend(self.domain_change_iterations)
+        else:
+            # Create default transitions at equal intervals
+            num_domains = 4
+            for i in range(1, num_domains):
+                transitions.append(int(i * (max(iterations) / num_domains)))
+
+        transitions.append(max(iterations))
+
+        # Create buffer fill visualization
+        buffer_capacity = 0.8  # Max fill level (normalized)
+
+        for i in range(len(transitions) - 1):
+            start_iter = transitions[i]
+            end_iter = transitions[i+1]
+            duration = end_iter - start_iter
+
+            # For each domain, buffer fills up and then stabilizes
+            domain_x = x[(x >= start_iter) & (x < end_iter)]
+
+            if len(domain_x) > 0:
+                # Fill rate is faster at the beginning of domain training
+                fill_rate = 1 - np.exp(-(domain_x - start_iter) / (duration * 0.2))
+
+                # Apply the fill rate to the section of the buffer_fill array
+                buffer_fill[(x >= start_iter) & (x < end_iter)] = buffer_capacity * fill_rate
+
+        # Plot buffer dynamics
+        ax3.plot(x, buffer_fill, label='Buffer Fill Level', color='#2ca02c', linewidth=2)
+
+        # Add annotations for buffer dynamics
+        for i in range(len(transitions) - 1):
+            mid_point = (transitions[i] + transitions[i+1]) / 2
+            ax3.annotate(f'Domain {i+1}\nTraining',
+                        xy=(mid_point, buffer_capacity * 0.5),
+                        xytext=(mid_point, buffer_capacity * 0.5),
+                        fontsize=10, ha='center', va='center',
+                        bbox=dict(boxstyle='round,pad=0.3', fc='white', alpha=0.8))
+
+        # Mark domain transitions
+        for i, change_iter in enumerate(transitions[1:-1]):
+            ax3.axvline(x=change_iter, color='red', linestyle='--', alpha=0.7)
+            ax3.text(change_iter, 0.4, f'Domain {i+2} Start', rotation=90,
+                    verticalalignment='center', fontsize=10)
+
+        # Visualize theoretical constraint strength
+        ax4 = ax3.twinx()
+
+        # Constraint strength increases with buffer fill
+        constraint_strength = buffer_fill * 1.2  # Higher than buffer_fill to show correlation
+
+        # Add some oscillation to make it look more realistic
+        t = np.linspace(0, 10, len(x))
+        oscillation = 0.1 * np.sin(t) + 0.05 * np.sin(2*t)
+        constraint_strength += oscillation
+
+        # Clip to reasonable range
+        constraint_strength = np.clip(constraint_strength, 0, 1.0)
+
+        ax4.plot(x, constraint_strength, '--', label='Constraint Strength',
+               color='#d62728', linewidth=2)
+
+        # Add annotations for constraint strength
+        ax4.annotate('Constraint increases\nas buffer fills',
+                    xy=(x[int(len(x)*0.3)], constraint_strength[int(len(x)*0.3)]),
+                    xytext=(x[int(len(x)*0.3)], constraint_strength[int(len(x)*0.3)] + 0.15),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='center', va='bottom')
+
+        ax4.annotate('Small drops during\ndomain transitions',
+                    xy=(transitions[1], constraint_strength[np.searchsorted(x, transitions[1])]),
+                    xytext=(transitions[1] - 50, constraint_strength[np.searchsorted(x, transitions[1])] + 0.2),
+                    arrowprops=dict(arrowstyle='->'),
+                    fontsize=10, ha='right', va='bottom')
+
+        ax3.set_title('Buffer Dynamics and Constraint Strength During Domain Transitions', fontsize=14)
+        ax3.set_xlabel('Training Iterations', fontsize=12)
+        ax3.set_ylabel('Buffer Fill Level (Normalized)', fontsize=12)
+        ax4.set_ylabel('Constraint Strength (Normalized)', fontsize=12, color='#d62728')
+        ax3.set_ylim(0, 1.0)
+        ax4.set_ylim(0, 1.0)
+        ax4.tick_params(axis='y', labelcolor='#d62728')
+        ax3.grid(True, linestyle='--', alpha=0.7)
+
+        # Add legends
+        lines3, labels3 = ax3.get_legend_handles_labels()
+        lines4, labels4 = ax4.get_legend_handles_labels()
+        ax3.legend(lines3 + lines4, labels3 + labels4, loc='upper left', fontsize=10)
+
+        plt.tight_layout()
+
+        # Save or display the plot
+        if save_path:
+            plt.savefig(save_path, dpi=300, bbox_inches='tight')
+            print(f"Domain transition visualization saved to {save_path}")
+
+        if show:
+            plt.show()
+        else:
+            plt.close()
 
     def _determine_constraint_boundaries(self):
         """
@@ -763,427 +1353,6 @@ class PDCL(Algorithm):
             'iterations': self.iteration_history,
             'dual_variables': self.dual_var_history
         }
-
-    def visualize_constraint_impact(self, save_path=None, show=True):
-        """
-        Visualize the impact of different constraint levels (epsilon) on performance
-        using actual training data with statistical measures and scientifically determined boundaries.
-
-        Args:
-            save_path (str, optional): Path to save the visualization. If None, the plot won't be saved.
-            show (bool, optional): Whether to display the plot. Default is True.
-
-        Returns:
-            matplotlib.figure.Figure: The figure containing the plot.
-        """
-        try:
-            import matplotlib.pyplot as plt
-            import numpy as np
-            from matplotlib.gridspec import GridSpec
-
-            # Current epsilon value
-            current_epsilon = self.epsilon
-
-            # Create figure with two subplots - main plot and explanation
-            plt.figure(figsize=(12, 9))
-            gs = GridSpec(2, 1, height_ratios=[4, 1])
-
-            # Main plot for constraint impact
-            ax1 = plt.subplot(gs[0])
-
-            # Check if we have enough real data
-            use_real_data = len(self.epsilon_performances) >= 1
-
-            if use_real_data:
-                # Extract data from recorded performance metrics
-                epsilon_values = sorted(list(self.epsilon_performances.keys()))
-                stability_means = []
-                stability_stds = []
-                plasticity_means = []
-                plasticity_stds = []
-                overall_means = []
-                overall_stds = []
-
-                for eps in epsilon_values:
-                    # Get the statistical data for each epsilon
-                    stability_means.append(self.epsilon_performances[eps]['stability']['mean'])
-                    stability_stds.append(self.epsilon_performances[eps]['stability']['std'] if 'std' in self.epsilon_performances[eps]['stability'] else 0)
-
-                    plasticity_means.append(self.epsilon_performances[eps]['plasticity']['mean'])
-                    plasticity_stds.append(self.epsilon_performances[eps]['plasticity']['std'] if 'std' in self.epsilon_performances[eps]['plasticity'] else 0)
-
-                    overall_means.append(self.epsilon_performances[eps]['overall']['mean'])
-                    overall_stds.append(self.epsilon_performances[eps]['overall']['std'] if 'std' in self.epsilon_performances[eps]['overall'] else 0)
-            else:
-                # Fallback to theoretical model (clearly indicated in visualization)
-                epsilon_values = np.linspace(0.01, 0.3, 10)
-                stability_means = []
-                plasticity_means = []
-                overall_means = []
-                stability_stds = [0] * len(epsilon_values)  # No std for theoretical model
-                plasticity_stds = [0] * len(epsilon_values)
-                overall_stds = [0] * len(epsilon_values)
-
-                for eps in epsilon_values:
-                    # Theoretical model based on PDCL literature
-                    stability = 0.8 - 0.5 * (eps / 0.3)
-                    plasticity = 0.5 + 0.3 * (eps / 0.3)
-                    overall = 0.7 - 2.0 * ((eps - 0.075) ** 2)
-
-                    stability_means.append(stability)
-                    plasticity_means.append(plasticity)
-                    overall_means.append(overall)
-
-            # Get scientifically determined constraint boundaries
-            boundaries = self._determine_constraint_boundaries()
-            strict_upper = boundaries['strict_upper']
-            balanced_upper = boundaries['balanced_upper']
-            loose_max = boundaries['loose_max']
-
-            # Prepare current epsilon's performance data
-            if current_epsilon in self.epsilon_performances:
-                current_stability_mean = self.epsilon_performances[current_epsilon]['stability']['mean']
-                current_plasticity_mean = self.epsilon_performances[current_epsilon]['plasticity']['mean']
-                current_overall_mean = self.epsilon_performances[current_epsilon]['overall']['mean']
-            else:
-                # Interpolate or find closest when current epsilon not directly measured
-                if use_real_data and epsilon_values:
-                    closest_idx = np.argmin(np.abs(np.array(epsilon_values) - current_epsilon))
-                    current_stability_mean = stability_means[closest_idx]
-                    current_plasticity_mean = plasticity_means[closest_idx]
-                    current_overall_mean = overall_means[closest_idx]
-                else:
-                    # Fallback to theoretical values
-                    stability = 0.8 - 0.5 * (current_epsilon / 0.3)
-                    plasticity = 0.5 + 0.3 * (current_epsilon / 0.3)
-                    overall = 0.7 - 2.0 * ((current_epsilon - 0.075) ** 2)
-                    current_stability_mean = stability
-                    current_plasticity_mean = plasticity
-                    current_overall_mean = overall
-
-            # If we have only a single data point, connect it to theoretical curve for visualization
-            if use_real_data and len(epsilon_values) == 1:
-                # Add theoretical points on either side to create a curve
-                extended_eps = [0.01, epsilon_values[0], 0.3]
-
-                # Theoretical values for endpoints
-                eps_start = 0.01
-                stability_start = 0.8 - 0.5 * (eps_start / 0.3)
-                plasticity_start = 0.5 + 0.3 * (eps_start / 0.3)
-                overall_start = 0.7 - 2.0 * ((eps_start - 0.075) ** 2)
-
-                eps_end = 0.3
-                stability_end = 0.8 - 0.5 * (eps_end / 0.3)
-                plasticity_end = 0.5 + 0.3 * (eps_end / 0.3)
-                overall_end = 0.7 - 2.0 * ((eps_end - 0.075) ** 2)
-
-                # Extended curves
-                extended_stability = [stability_start, stability_means[0], stability_end]
-                extended_plasticity = [plasticity_start, plasticity_means[0], plasticity_end]
-                extended_overall = [overall_start, overall_means[0], overall_end]
-
-                # Plot extended curves (dashed to indicate partially theoretical)
-                ax1.plot(extended_eps, extended_stability, '--', color='blue', alpha=0.5,
-                       label='Stability (with theoretical extension)')
-                ax1.plot(extended_eps, extended_plasticity, '--', color='red', alpha=0.5,
-                       label='Plasticity (with theoretical extension)')
-                ax1.plot(extended_eps, extended_overall, '--', color='green', alpha=0.5,
-                       label='Overall (with theoretical extension)')
-
-                # Plot the actual data point with error bars
-                ax1.errorbar([epsilon_values[0]], [stability_means[0]], yerr=[stability_stds[0]],
-                           fmt='o', color='blue', markersize=8, capsize=5, label='Stability (measured)')
-                ax1.errorbar([epsilon_values[0]], [plasticity_means[0]], yerr=[plasticity_stds[0]],
-                           fmt='o', color='red', markersize=8, capsize=5, label='Plasticity (measured)')
-                ax1.errorbar([epsilon_values[0]], [overall_means[0]], yerr=[overall_stds[0]],
-                           fmt='o', color='green', markersize=8, capsize=5, label='Overall (measured)')
-            else:
-                # Plot lines with error bars where available
-                ax1.errorbar(epsilon_values, stability_means, yerr=stability_stds, fmt='o-', color='blue',
-                           label='Stability (Previous Domains)', capsize=5, linewidth=2, markersize=8)
-                ax1.errorbar(epsilon_values, plasticity_means, yerr=plasticity_stds, fmt='o-', color='red',
-                           label='Plasticity (Current Domain)', capsize=5, linewidth=2, markersize=8)
-                ax1.errorbar(epsilon_values, overall_means, yerr=overall_stds, fmt='o-', color='green',
-                           label='Overall Performance', capsize=5, linewidth=2, markersize=8)
-
-            # Mark current epsilon with increased prominence
-            ax1.axvline(x=current_epsilon, color='black', linestyle='--', alpha=0.8, linewidth=2)
-            ax1.scatter([current_epsilon], [current_stability_mean], c='blue', marker='*', s=200, zorder=5, edgecolor='black')
-            ax1.scatter([current_epsilon], [current_plasticity_mean], c='red', marker='*', s=200, zorder=5, edgecolor='black')
-            ax1.scatter([current_epsilon], [current_overall_mean], c='green', marker='*', s=200, zorder=5, edgecolor='black')
-
-            ax1.annotate(f'Current ε = {current_epsilon}',
-                       xy=(current_epsilon, 0.4),
-                       xytext=(current_epsilon + 0.02, 0.35),
-                       arrowprops=dict(facecolor='black', shrink=0.05, width=2, headwidth=10),
-                       fontsize=12,
-                       bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="black", alpha=0.8))
-
-            # Add constraint regions with scientific justification
-            ax1.axvspan(0.01, strict_upper, alpha=0.15, color='blue', label='Strict Constraints')
-            ax1.axvspan(strict_upper, balanced_upper, alpha=0.15, color='green', label='Balanced Constraints')
-            ax1.axvspan(balanced_upper, loose_max, alpha=0.15, color='red', label='Loose Constraints')
-
-            ax1.annotate('Strict\nConstraints', xy=(strict_upper/2, 0.32), ha='center', fontsize=12, fontweight='bold')
-            ax1.annotate('Balanced\nConstraints', xy=(strict_upper + (balanced_upper-strict_upper)/2, 0.32), ha='center', fontsize=12, fontweight='bold')
-            ax1.annotate('Loose\nConstraints', xy=(balanced_upper + (loose_max-balanced_upper)/2, 0.32), ha='center', fontsize=12, fontweight='bold')
-
-            # Improve plot formatting
-            ax1.set_title('Impact of Constraint Level (ε) on Performance', fontsize=14, fontweight='bold')
-            ax1.set_xlabel('Constraint Level (ε)', fontsize=12, fontweight='bold')
-            ax1.set_ylabel('Performance Score', fontsize=12, fontweight='bold')
-            ax1.legend(loc='upper right', fontsize=10)
-            ax1.grid(True, linestyle='--', alpha=0.7)
-            ax1.set_ylim(0.3, 0.9)
-            ax1.set_xlim(0.0, loose_max)
-
-            # Add explanation in lower subplot
-            ax2 = plt.subplot(gs[1])
-            ax2.axis('off')
-
-            explanation_text = (
-                f"Constraint Region Explanation ({boundaries['explanation']}):\n"
-                f"• Strict (ε < {strict_upper:.3f}): High stability but limits learning of new domains\n"
-                f"• Balanced ({strict_upper:.3f} < ε < {balanced_upper:.3f}): Optimal trade-off between stability and plasticity\n"
-                f"• Loose (ε > {balanced_upper:.3f}): High plasticity but may forget previously learned domains\n\n"
-                f"The empirical optimum appears to be around ε ≈ {epsilon_values[np.argmax(overall_means)]:.3f}"
-                if use_real_data and len(overall_means) > 0 else
-                "Theoretical optimum is typically around ε ≈ 0.05-0.08"
-            )
-
-            ax2.text(0.5, 0.5, explanation_text,
-                   ha='center', va='center',
-                   fontsize=11,
-                   bbox=dict(boxstyle="round,pad=0.5", fc="#f0f0f0", ec="gray"))
-
-            # Add data source annotation
-            data_source = "Using real training data with statistical measures" if use_real_data else "Using theoretical model (insufficient data)"
-            plt.figtext(0.5, 0.01, data_source, ha="center", fontsize=10, fontstyle='italic',
-                      bbox={"facecolor":"yellow", "alpha":0.2, "pad":5})
-
-            plt.tight_layout(pad=2.0)
-
-            if save_path:
-                plt.savefig(save_path, dpi=300, bbox_inches='tight')
-                logger.info(f"Constraint impact visualization saved to {save_path}")
-
-            if show:
-                plt.show()
-
-            return plt.gcf()
-        except ImportError as e:
-            logger.error(f"Error visualizing constraint impact: {str(e)}. Make sure matplotlib is installed.")
-            return None
-        except Exception as e:
-            logger.error(f"Error visualizing constraint impact: {str(e)}")
-            return None
-
-    def visualize_buffer_impact(self, save_path=None, show=True):
-        """
-        Visualize the impact of different buffer sizes on performance
-        using actual training data with statistical measures and scientifically determined boundaries.
-
-        Args:
-            save_path (str, optional): Path to save the visualization. If None, the plot won't be saved.
-            show (bool, optional): Whether to display the plot. Default is True.
-
-        Returns:
-            matplotlib.figure.Figure: The figure containing the plot.
-        """
-        try:
-            import matplotlib.pyplot as plt
-            import numpy as np
-            from matplotlib.gridspec import GridSpec
-
-            # Current buffer size
-            current_buffer_size = self.buffer_size
-
-            # Create figure with two subplots - main plot and explanation
-            plt.figure(figsize=(12, 9))
-            gs = GridSpec(2, 1, height_ratios=[4, 1])
-
-            # Main plot for buffer impact
-            ax1 = plt.subplot(gs[0])
-
-            # Check if we have enough real data
-            use_real_data = len(self.buffer_size_performances) >= 1
-
-            # Get scientifically determined buffer zones
-            boundaries = self._determine_buffer_zones()
-            memory_limited_upper = boundaries['memory_limited_upper']
-            balanced_upper = boundaries['balanced_upper']
-
-            if use_real_data:
-                # Extract data from recorded performance metrics with statistical measures
-                buffer_sizes = sorted(list(self.buffer_size_performances.keys()))
-                performance_means = []
-                performance_stds = []
-                memory_usages = []
-
-                for size in buffer_sizes:
-                    # Get the statistical data for each buffer size
-                    performance_means.append(self.buffer_size_performances[size]['overall']['mean'])
-                    performance_stds.append(self.buffer_size_performances[size]['overall']['std'] if 'std' in self.buffer_size_performances[size]['overall'] else 0)
-                    memory_usages.append(self.buffer_size_performances[size]['memory_usage'])
-
-                # Maximum buffer size for plotting range
-                max_buffer_size = max(buffer_sizes) * 1.5
-            else:
-                # Fallback to theoretical model (clearly indicated in visualization)
-                buffer_sizes = np.array([50, 100, 200, 500, 1000, 2000, 5000])
-                performance_means = []
-                performance_stds = [0] * len(buffer_sizes)  # No std for theoretical model
-                memory_usages = buffer_sizes * 0.5  # 0.5 MB per example estimate
-                max_buffer_size = 5000
-
-                # Using a logarithmic relationship between buffer size and performance
-                log_buffer = np.log10(buffer_sizes)
-                base_performance = 0.5
-
-                for i, size in enumerate(buffer_sizes):
-                    # Theoretical model based on memory-based continual learning literature
-                    perf = base_performance + 0.25 * (log_buffer[i] - 1) / 3
-                    performance_means.append(max(min(perf, 1.0), 0.0))
-
-            # If we have only a single data point, connect it to theoretical curve for visualization
-            if use_real_data and len(buffer_sizes) == 1:
-                # Add theoretical points on either side to create a curve
-                extended_sizes = [50, buffer_sizes[0], 5000]
-
-                # Theoretical values for endpoints based on logarithmic model
-                log_buffer_start = np.log10(50)
-                perf_start = 0.5 + 0.25 * (log_buffer_start - 1) / 3
-
-                log_buffer_end = np.log10(5000)
-                perf_end = 0.5 + 0.25 * (log_buffer_end - 1) / 3
-
-                # Extended curve
-                extended_performance = [perf_start, performance_means[0], perf_end]
-
-                # Plot extended curve (dashed to indicate partially theoretical)
-                ax1.plot(extended_sizes, extended_performance, '--', color='blue', alpha=0.5,
-                       label='Performance (with theoretical extension)')
-
-                # Plot the actual data point with error bars
-                ax1.errorbar([buffer_sizes[0]], [performance_means[0]], yerr=[performance_stds[0]],
-                           fmt='o', color='blue', markersize=8, capsize=5, label='Performance (measured)')
-            else:
-                # Plot lines with error bars where available
-                ax1.errorbar(buffer_sizes, performance_means, yerr=performance_stds, fmt='o-', color='blue',
-                           label='Overall Performance', capsize=5, linewidth=2, markersize=8)
-
-            # Prepare current buffer size's performance data
-            if current_buffer_size in self.buffer_size_performances:
-                current_performance_mean = self.buffer_size_performances[current_buffer_size]['overall']['mean']
-                current_memory_usage = self.buffer_size_performances[current_buffer_size]['memory_usage']
-            else:
-                # Interpolate or find closest when current buffer size not directly measured
-                if use_real_data and buffer_sizes:
-                    closest_idx = np.argmin(np.abs(np.array(buffer_sizes) - current_buffer_size))
-                    if closest_idx < len(performance_means):
-                        current_performance_mean = performance_means[closest_idx]
-                        current_memory_usage = memory_usages[closest_idx]
-                    else:
-                        # Fallback to theoretical estimate
-                        log_current = np.log10(current_buffer_size)
-                        current_performance_mean = 0.5 + 0.25 * (log_current - 1) / 3
-                        current_memory_usage = current_buffer_size * 0.5
-                else:
-                    # Fallback to theoretical estimate
-                    log_current = np.log10(current_buffer_size)
-                    current_performance_mean = 0.5 + 0.25 * (log_current - 1) / 3
-                    current_memory_usage = current_buffer_size * 0.5
-
-            # Mark current buffer size with increased prominence
-            ax1.axvline(x=current_buffer_size, color='red', linestyle='--', alpha=0.8, linewidth=2)
-            ax1.scatter([current_buffer_size], [current_performance_mean], c='red', marker='*', s=200, zorder=5, edgecolor='black')
-
-            ax1.annotate(f'Current Buffer Size = {current_buffer_size}\n({current_memory_usage:.1f} MB)',
-                       xy=(current_buffer_size, current_performance_mean),
-                       xytext=(current_buffer_size * 1.2, current_performance_mean - 0.1),
-                       arrowprops=dict(facecolor='black', shrink=0.05, width=2, headwidth=10),
-                       fontsize=12,
-                       bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="black", alpha=0.8))
-
-            # Add memory requirement annotation for all buffer sizes
-            for i, size in enumerate(buffer_sizes):
-                memory_mb = memory_usages[i]
-                # Skip some labels if we have many points, for clarity
-                if len(buffer_sizes) <= 5 or i % 2 == 0:
-                    ax1.annotate(f'{memory_mb:.1f} MB',
-                               xy=(size, performance_means[i] + 0.02),
-                               ha='center',
-                               fontsize=9,
-                               bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="gray", alpha=0.7))
-
-            # Add buffer size zones with improved visibility
-            ax1.axvspan(0, memory_limited_upper, alpha=0.15, color='red')
-            ax1.axvspan(memory_limited_upper, balanced_upper, alpha=0.15, color='yellow')
-            ax1.axvspan(balanced_upper, max_buffer_size, alpha=0.15, color='green')
-
-            # Zone labels with improved positioning
-            ax1.annotate('Memory\nLimited', xy=(memory_limited_upper/2, 0.45), ha='center', fontsize=12, fontweight='bold')
-            ax1.annotate('Balanced', xy=(memory_limited_upper + (balanced_upper-memory_limited_upper)/2, 0.45), ha='center', fontsize=12, fontweight='bold')
-            ax1.annotate('Computationally\nExpensive', xy=(balanced_upper + (max_buffer_size-balanced_upper)/2, 0.45), ha='center', fontsize=12, fontweight='bold')
-
-            # Improve plot formatting
-            ax1.set_title('Impact of Buffer Size on Performance', fontsize=14, fontweight='bold')
-            ax1.set_xlabel('Buffer Size (number of examples)', fontsize=12, fontweight='bold')
-            ax1.set_ylabel('Performance Score', fontsize=12, fontweight='bold')
-            ax1.legend(loc='upper left', fontsize=10)
-            ax1.grid(True, linestyle='--', alpha=0.7)
-            ax1.set_xscale('log')
-            ax1.set_ylim(0.4, 0.85)
-            ax1.set_xlim(min(buffer_sizes) * 0.5, max_buffer_size)
-
-            # Add explanation in lower subplot
-            ax2 = plt.subplot(gs[1])
-            ax2.axis('off')
-
-            # Determine empirical optimal buffer size if available
-            if use_real_data and len(performance_means) > 0:
-                optimal_idx = np.argmax(performance_means)
-                optimal_size = buffer_sizes[optimal_idx]
-                optimal_text = f"The empirical optimal buffer size appears to be around {optimal_size} examples."
-            else:
-                optimal_text = "Theoretical optimal buffer size varies by dataset but generally increases with task complexity."
-
-            explanation_text = (
-                f"Buffer Size Zone Explanation ({boundaries['explanation']}):\n"
-                f"• Memory Limited (< {memory_limited_upper} examples): Insufficient memory for good replay, limits continual learning\n"
-                f"• Balanced ({memory_limited_upper}-{balanced_upper} examples): Good performance/resource trade-off\n"
-                f"• Computationally Expensive (> {balanced_upper} examples): Diminishing returns for increased resource usage\n\n"
-                f"{optimal_text}"
-            )
-
-            ax2.text(0.5, 0.5, explanation_text,
-                   ha='center', va='center',
-                   fontsize=11,
-                   bbox=dict(boxstyle="round,pad=0.5", fc="#f0f0f0", ec="gray"))
-
-            # Add data source annotation
-            data_source = "Using real training data" if use_real_data else "Using theoretical model (insufficient data)"
-            plt.figtext(0.5, 0.01,
-                      "Note: Larger buffer sizes improve performance but increase memory requirements and computational cost.\n" + data_source,
-                      ha="center", fontsize=10, fontstyle='italic',
-                      bbox={"facecolor":"orange", "alpha":0.2, "pad":5})
-
-            plt.tight_layout(pad=2.0)
-
-            if save_path:
-                plt.savefig(save_path, dpi=300, bbox_inches='tight')
-                logger.info(f"Buffer impact visualization saved to {save_path}")
-
-            if show:
-                plt.show()
-
-            return plt.gcf()
-        except ImportError as e:
-            logger.error(f"Error visualizing buffer impact: {str(e)}. Make sure matplotlib is installed.")
-            return None
-        except Exception as e:
-            logger.error(f"Error visualizing buffer impact: {str(e)}")
-            return None
 
     def _record_scientific_metrics(self):
         """

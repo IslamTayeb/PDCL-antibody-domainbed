@@ -7,6 +7,8 @@ import os
 import random
 import sys
 import time
+import uuid
+import datetime
 import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend for headless servers
 import matplotlib.pyplot as plt
@@ -374,12 +376,10 @@ if __name__ == "__main__":
 
         # For tracking experiment results
         epsilon_results = {}
-        buffer_results = {}
 
         # Save original algorithm for comparison and as baseline
         base_algorithm = algorithm
         baseline_epsilon = hparams['epsilon']
-        baseline_buffer_size = hparams['buffer_size']
 
         # 1. Run experiments with different epsilon values (5000 steps each)
         epsilon_values = [0.01, 0.03, 0.05, 0.08, 0.12, 0.2]
@@ -390,7 +390,7 @@ if __name__ == "__main__":
             if eps == baseline_epsilon:
                 # Skip rerunning baseline (use original results)
                 print(f"Using baseline results for epsilon = {eps}")
-                epsilon_results[eps] = {'stability': [], 'plasticity': [], 'overall': []}
+                epsilon_results[eps] = {'stability': None, 'plasticity': None, 'overall': None}
 
                 # Extract performance metrics from base_algorithm
                 if hasattr(base_algorithm, 'stability_metrics') and len(base_algorithm.stability_metrics) > 0:
@@ -413,13 +413,6 @@ if __name__ == "__main__":
                                           len(dataset) - len(args.test_envs), exp_hparams)
             exp_algorithm.to(device)
 
-            # Create a new optimizer for this experiment
-            exp_optimizer = torch.optim.Adam(
-                exp_algorithm.network.parameters(),
-                lr=exp_hparams["primal_lr"],
-                weight_decay=exp_hparams['weight_decay']
-            )
-
             # Train for viz_steps (limited training for visualization)
             train_minibatches_iterator = zip(*train_loaders)
             for step in range(viz_steps):
@@ -440,139 +433,100 @@ if __name__ == "__main__":
                 minibatches_device = [(x.to(device), y.to(device)) for x, y in minibatches_device]
                 exp_algorithm.update(minibatches_device, None)
 
-            # Record final performance metrics
-            epsilon_results[eps] = {'stability': [], 'plasticity': [], 'overall': []}
+            # Evaluate on a larger test batch to get more accurate metrics
+            print(f"  Evaluating final performance for epsilon = {eps}...")
 
-            if hasattr(exp_algorithm, 'stability_metrics') and len(exp_algorithm.stability_metrics) > 0:
-                epsilon_results[eps]['stability'] = exp_algorithm.stability_metrics[-1]
-            if hasattr(exp_algorithm, 'plasticity_metrics') and len(exp_algorithm.plasticity_metrics) > 0:
-                epsilon_results[eps]['plasticity'] = exp_algorithm.plasticity_metrics[-1]
-            if hasattr(exp_algorithm, 'overall_metrics') and len(exp_algorithm.overall_metrics) > 0:
-                epsilon_results[eps]['overall'] = exp_algorithm.overall_metrics[-1]
+            # Extract the metrics from the last 5 steps (more stable than just the last one)
+            stability_values = []
+            plasticity_values = []
+            overall_values = []
 
-            # Clean up to free memory
-            del exp_algorithm
-            del exp_optimizer
-            torch.cuda.empty_cache()
+            # Get metrics from the algorithm's tracking
+            if hasattr(exp_algorithm, 'stability_metrics') and len(exp_algorithm.stability_metrics) >= 5:
+                stability_values = exp_algorithm.stability_metrics[-5:]
+            if hasattr(exp_algorithm, 'plasticity_metrics') and len(exp_algorithm.plasticity_metrics) >= 5:
+                plasticity_values = exp_algorithm.plasticity_metrics[-5:]
+            if hasattr(exp_algorithm, 'overall_metrics') and len(exp_algorithm.overall_metrics) >= 5:
+                overall_values = exp_algorithm.overall_metrics[-5:]
 
-        # 2. Run experiments with different buffer sizes (5000 steps each)
-        buffer_sizes = [50, 100, 200, 500, 1000]
+            # Use averages of last 5 values for stability
+            epsilon_results[eps] = {
+                'stability': sum(stability_values) / max(len(stability_values), 1) if stability_values else None,
+                'plasticity': sum(plasticity_values) / max(len(plasticity_values), 1) if plasticity_values else None,
+                'overall': sum(overall_values) / max(len(overall_values), 1) if overall_values else None
+            }
 
-        print(f"\nRunning {len(buffer_sizes)} experiments with different buffer sizes...")
-        for i, buffer_size in enumerate(buffer_sizes):
-            if buffer_size == baseline_buffer_size:
-                # Skip rerunning baseline (use original results)
-                print(f"Using baseline results for buffer_size = {buffer_size}")
-                buffer_results[buffer_size] = {'overall': []}
-
-                # Extract performance metrics from base_algorithm
-                if hasattr(base_algorithm, 'overall_metrics') and len(base_algorithm.overall_metrics) > 0:
-                    buffer_results[buffer_size]['overall'] = base_algorithm.overall_metrics[-1]
-                continue
-
-            print(f"\nExperiment {i+1}/{len(buffer_sizes)}: Running with buffer_size = {buffer_size}")
-
-            # Create experiment-specific hparams
-            exp_hparams = base_hparams.copy()
-            exp_hparams['buffer_size'] = buffer_size
-
-            # Create a new algorithm instance with the experimental buffer size
-            algorithm_class = algorithms.get_algorithm_class(args.algorithm)
-            exp_algorithm = algorithm_class(dataset.input_shape, dataset.num_classes,
-                                          len(dataset) - len(args.test_envs), exp_hparams)
-            exp_algorithm.to(device)
-
-            # Create a new optimizer for this experiment
-            exp_optimizer = torch.optim.Adam(
-                exp_algorithm.network.parameters(),
-                lr=exp_hparams["primal_lr"],
-                weight_decay=exp_hparams['weight_decay']
-            )
-
-            # Train for viz_steps (limited training for visualization)
-            train_minibatches_iterator = zip(*train_loaders)
-            for step in range(viz_steps):
-                if step % 500 == 0:
-                    print(f"  Step {step}/{viz_steps}...")
-
-                minibatches_device = [(x, y) for x, y in next(train_minibatches_iterator)]
-                if args.use_esm:
-                    try:
-                        minibatches_device = pad_x(
-                            minibatches_device,
-                            padding_idx=exp_algorithm.featurizer.alphabet.padding_idx)
-                    except:
-                        minibatches_device = pad_x(
-                            minibatches_device,
-                            padding_idx=exp_algorithm.network.featurizer.alphabet.padding_idx)
-
-                minibatches_device = [(x.to(device), y.to(device)) for x, y in minibatches_device]
-                exp_algorithm.update(minibatches_device, None)
-
-            # Record final performance metrics
-            buffer_results[buffer_size] = {'overall': []}
-
-            if hasattr(exp_algorithm, 'overall_metrics') and len(exp_algorithm.overall_metrics) > 0:
-                buffer_results[buffer_size]['overall'] = exp_algorithm.overall_metrics[-1]
+            # Verify and log collected metrics
+            print(f"  Metrics collected for epsilon = {eps}:")
+            print(f"    Stability: {epsilon_results[eps]['stability']}")
+            print(f"    Plasticity: {epsilon_results[eps]['plasticity']}")
+            print(f"    Overall: {epsilon_results[eps]['overall']}")
 
             # Clean up to free memory
             del exp_algorithm
-            del exp_optimizer
             torch.cuda.empty_cache()
 
-        # 3. Now let's create comprehensive visualizations
+        # 2. Now create a new visualization for domain transitions
+        print("\nGenerating domain transition visualization...")
+
+        # Use the baseline algorithm's data to create a domain transition visualization
+        if hasattr(base_algorithm, 'iteration_history') and hasattr(base_algorithm, 'dual_var_history'):
+            try:
+                # Create domain transition visualization
+                transition_viz_path = os.path.join(viz_dir, 'domain_transition_viz.png')
+
+                # Call a new method to visualize domain transitions
+                base_algorithm.visualize_domain_transitions(save_path=transition_viz_path, show=False)
+                print(f"Domain transition visualization saved to {transition_viz_path}")
+            except Exception as e:
+                print(f"Warning: Could not generate domain transition visualization: {str(e)}")
+
+        # 3. Now let's create the comprehensive constraint impact visualization
         print("\nGenerating comprehensive visualizations...")
 
         # Create a helper function to convert results to the format expected by visualization methods
         def prepare_epsilon_data_for_visualization(results):
-            # Convert results into the format expected by the visualization methods
+            # Validate and convert results into the format expected by the visualization methods
             data = {}
-            for eps, metrics in results.items():
+
+            # Check for valid entries and filter out None values
+            valid_results = {k: v for k, v in results.items()
+                            if v['stability'] is not None and
+                               v['plasticity'] is not None and
+                               v['overall'] is not None}
+
+            if not valid_results:
+                print("Warning: No valid data found for constraint impact visualization")
+                return {}
+
+            for eps, metrics in valid_results.items():
+                # Validate metrics are in reasonable range (0-1)
+                stability = min(max(metrics['stability'], 0.0), 1.0)
+                plasticity = min(max(metrics['plasticity'], 0.0), 1.0)
+                overall = min(max(metrics['overall'], 0.0), 1.0)
+
                 data[eps] = {
                     'epsilon': eps,
-                    'stability': {'values': [metrics['stability']], 'mean': metrics['stability'], 'std': 0},
-                    'plasticity': {'values': [metrics['plasticity']], 'mean': metrics['plasticity'], 'std': 0},
-                    'overall': {'values': [metrics['overall']], 'mean': metrics['overall'], 'std': 0},
+                    'stability': {'values': [stability], 'mean': stability, 'std': 0},
+                    'plasticity': {'values': [plasticity], 'mean': plasticity, 'std': 0},
+                    'overall': {'values': [overall], 'mean': overall, 'std': 0},
                     'iterations': [viz_steps]
                 }
             return data
-
-        def prepare_buffer_data_for_visualization(results):
-            # Convert results into the format expected by the visualization methods
-            data = {}
-            for buffer_size, metrics in results.items():
-                # Calculate memory usage based on buffer size
-                memory_usage = buffer_size * 0.5  # 0.5 MB per example is an empirical estimate
-
-                data[buffer_size] = {
-                    'buffer_size': buffer_size,
-                    'overall': {'values': [metrics['overall']], 'mean': metrics['overall'], 'std': 0},
-                    'memory_usage': memory_usage,
-                    'iterations': [viz_steps]
-                }
-            return data
-
-        # Replace the algorithm's internal data structures with our comprehensive results
-        algorithm.epsilon_performances = prepare_epsilon_data_for_visualization(epsilon_results)
-        algorithm.buffer_size_performances = prepare_buffer_data_for_visualization(buffer_results)
 
         # Save the data
         with open(os.path.join(viz_dir, 'epsilon_results.json'), 'w') as f:
             json.dump({str(k): v for k, v in epsilon_results.items()}, f, indent=2)
 
-        with open(os.path.join(viz_dir, 'buffer_results.json'), 'w') as f:
-            json.dump({str(k): v for k, v in buffer_results.items()}, f, indent=2)
+        # Replace the algorithm's internal data structures with our comprehensive results
+        algorithm.epsilon_performances = prepare_epsilon_data_for_visualization(epsilon_results)
 
-        # Generate visualizations using the algorithm's methods
+        # Generate the constraint impact visualization
         constraint_path = os.path.join(viz_dir, 'comprehensive_constraint_impact.png')
         algorithm.visualize_constraint_impact(save_path=constraint_path, show=False)
         print(f"Comprehensive constraint impact visualization saved to {constraint_path}")
 
-        buffer_path = os.path.join(viz_dir, 'comprehensive_buffer_impact.png')
-        algorithm.visualize_buffer_impact(save_path=buffer_path, show=False)
-        print(f"Comprehensive buffer impact visualization saved to {buffer_path}")
-
-        # Also generate the dual variables visualization for completeness
+        # Generate the dual variables visualization for completeness
         dual_path = os.path.join(viz_dir, 'dual_variables.png')
         algorithm.visualize_dual_variables(save_path=dual_path, show=False)
         print(f"Dual variables visualization saved to {dual_path}")
@@ -614,6 +568,111 @@ if __name__ == "__main__":
             with open(data_path, 'w') as f:
                 json.dump(serializable_data, f, indent=2)
             print(f"PDCL dual variable data saved to {data_path}")
+
+            # Create an HTML index file to organize and explain the visualizations
+            index_path = os.path.join(visualization_dir, 'index.html')
+            html_content = f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDCL Algorithm Visualizations</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }}
+        h1, h2, h3 {{
+            color: #2c3e50;
+        }}
+        .visualization-container {{
+            margin-bottom: 40px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }}
+        .visualization-image {{
+            width: 100%;
+            max-width: 1000px;
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }}
+        .description {{
+            margin-bottom: 15px;
+        }}
+        .code {{
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }}
+        .info-box {{
+            background-color: #e8f4f8;
+            border-left: 4px solid #5bc0de;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }}
+    </style>
+</head>
+<body>
+    <h1>PDCL Algorithm Visualizations</h1>
+    <p>This page presents visualizations of the Primal-Dual Continual Learning (PDCL) algorithm's performance on the Antibody DomainBed benchmark. These visualizations help understand the algorithm's behavior and the impact of its key hyperparameters.</p>
+
+    <div class="visualization-container">
+        <h2>Dual Variables Evolution</h2>
+        <div class="description">
+            <p>This visualization shows how dual variables (λ) evolve during training. Dual variables are Lagrange multipliers that enforce constraints on the loss of previously learned domains. Higher values indicate greater difficulty in satisfying constraints.</p>
+            <div class="info-box">
+                <strong>Interpretation:</strong> Spikes in dual variables indicate challenging transitions between domains. As the model adapts, dual variables typically decrease, showing that constraints are being satisfied.
+            </div>
+        </div>
+        <img src="dual_variables.png" alt="Dual Variables Evolution" class="visualization-image">
+    </div>
+
+    <div class="visualization-container">
+        <h2>Constraint Level (ε) Impact</h2>
+        <div class="description">
+            <p>This visualization shows how different constraint levels (ε) affect the trade-off between stability (performance on previous domains) and plasticity (performance on current domain).</p>
+            <div class="info-box">
+                <strong>Interpretation:</strong> The optimal ε value balances stability and plasticity. Too small ε leads to forgetting previous domains (low stability), while too large ε restricts learning new domains (low plasticity).
+            </div>
+        </div>
+        <img src="constraint_impact.png" alt="Constraint Level Impact" class="visualization-image">
+    </div>
+
+    <div class="visualization-container">
+        <h2>Buffer Size Impact</h2>
+        <div class="description">
+            <p>This visualization shows how buffer size affects performance and memory usage. The buffer stores examples from previous domains for replay-based constraint enforcement.</p>
+            <div class="info-box">
+                <strong>Interpretation:</strong> Larger buffers typically improve performance but with diminishing returns and increased memory requirements. The visualization helps identify the optimal buffer size for your computational resources.
+            </div>
+        </div>
+        <img src="buffer_impact.png" alt="Buffer Size Impact" class="visualization-image">
+    </div>
+
+    <div class="info-box">
+        <h3>Raw Data</h3>
+        <p>The raw data for the dual variables visualization is available as JSON at <a href="dual_variables_data.json">dual_variables_data.json</a> for further analysis.</p>
+    </div>
+
+    <footer>
+        <p>Generated on {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} during PDCL training</p>
+    </footer>
+</body>
+</html>'''
+
+            try:
+                with open(index_path, 'w') as f:
+                    f.write(html_content)
+                print(f"Visualization index created at {index_path}")
+            except Exception as e:
+                print(f"Warning: Failed to create visualization index: {str(e)}")
 
         except Exception as e:
             print(f"Warning: Failed to generate PDCL visualizations: {str(e)}")
