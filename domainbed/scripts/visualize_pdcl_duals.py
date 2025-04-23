@@ -13,6 +13,7 @@ import argparse
 import os
 import sys
 import json
+import logging
 
 import torch
 import matplotlib.pyplot as plt
@@ -26,50 +27,70 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Visualize PDCL dual variables")
     parser.add_argument("--input_dir", type=str, required=True,
         help="Directory containing model checkpoints")
-    parser.add_argument("--output_dir", type=str, default="visualizations",
+    parser.add_argument("--output_dir", type=str, default="./pdcl_visualizations",
         help="Directory to save the visualizations")
     parser.add_argument("--checkpoint", type=str, default=None,
         help="Specific checkpoint file to visualize (if not specified, visualizes all PDCL checkpoints)")
     parser.add_argument("--show", action="store_true",
         help="Whether to display the plots interactively")
+    parser.add_argument("--no_log_file", action="store_true",
+        help="Disable writing to a log file (use if you have permission issues)")
 
     args = parser.parse_args()
 
-    # Create output directory if it doesn't exist
-    os.makedirs(args.output_dir, os.path.exists(args.output_dir))
+    # Try to create output directory
+    try:
+        os.makedirs(args.output_dir, exist_ok=True)
+        has_output_dir_access = True
+    except PermissionError:
+        print(f"Warning: Cannot create output directory {args.output_dir} due to permission issues.")
+        print("Will attempt to save visualizations to current directory instead.")
+        args.output_dir = "."
+        has_output_dir_access = False
 
-    log_file = os.path.join(args.output_dir, "visualization_log.txt")
-    sys.stdout = Tee(log_file, "w")
+    # Setup logging
+    if not args.no_log_file and has_output_dir_access:
+        try:
+            log_file = os.path.join(args.output_dir, "visualization_log.txt")
+            sys.stdout = Tee(log_file, "w")
+            print(f"Logging to {log_file}")
+        except Exception as e:
+            print(f"Warning: Could not create log file: {e}")
+            print("Continuing without log file.")
 
-    logger.info(f"Looking for PDCL checkpoints in {args.input_dir}")
+    print(f"Looking for PDCL checkpoints in {args.input_dir}")
 
     # Find all PDCL checkpoints
     if args.checkpoint:
         checkpoints = [args.checkpoint]
     else:
         checkpoints = []
-        for root, dirs, files in os.walk(args.input_dir):
-            for file in files:
-                if file.endswith(".pkl") and "model" in file:
-                    checkpoint_path = os.path.join(root, file)
-                    try:
-                        # Check if this is a PDCL checkpoint
-                        checkpoint = torch.load(checkpoint_path)
-                        if "args" in checkpoint and checkpoint["args"]["algorithm"] == "PDCL":
-                            checkpoints.append(checkpoint_path)
-                    except Exception as e:
-                        logger.warning(f"Error loading checkpoint {checkpoint_path}: {str(e)}")
+        try:
+            for root, dirs, files in os.walk(args.input_dir):
+                for file in files:
+                    if file.endswith(".pkl") and "model" in file:
+                        checkpoint_path = os.path.join(root, file)
+                        try:
+                            # Check if this is a PDCL checkpoint
+                            checkpoint = torch.load(checkpoint_path)
+                            if "args" in checkpoint and checkpoint["args"]["algorithm"] == "PDCL":
+                                checkpoints.append(checkpoint_path)
+                        except Exception as e:
+                            print(f"Warning: Error loading checkpoint {checkpoint_path}: {str(e)}")
+        except Exception as e:
+            print(f"Error scanning input directory {args.input_dir}: {str(e)}")
 
     if not checkpoints:
-        logger.error(f"No PDCL checkpoints found in {args.input_dir}")
+        print(f"No PDCL checkpoints found in {args.input_dir}")
         sys.exit(1)
 
-    logger.info(f"Found {len(checkpoints)} PDCL checkpoints")
+    print(f"Found {len(checkpoints)} PDCL checkpoints")
+    successful_plots = 0
 
     # Process each checkpoint
     for checkpoint_path in checkpoints:
         try:
-            logger.info(f"Processing checkpoint: {checkpoint_path}")
+            print(f"Processing checkpoint: {checkpoint_path}")
 
             # Load checkpoint
             checkpoint = torch.load(checkpoint_path)
@@ -80,12 +101,12 @@ if __name__ == "__main__":
 
             # Check if this is a valid PDCL checkpoint with dual variable history
             if "dual_var_history" not in model_dict:
-                logger.warning(f"Checkpoint {checkpoint_path} does not contain dual variable history, skipping")
+                print(f"Warning: Checkpoint {checkpoint_path} does not contain dual variable history, skipping")
                 continue
 
             # Extract relevant information
             dual_var_history = model_dict["dual_var_history"]
-            iteration_history = model_dict.get("iteration_history", list(range(len(dual_var_history[0]))))
+            iteration_history = model_dict.get("iteration_history", list(range(len(next(iter(dual_var_history.values()), [])))))
 
             # Create a figure for visualization
             plt.figure(figsize=(12, 8))
@@ -129,12 +150,24 @@ if __name__ == "__main__":
                         )
 
             # Save the visualization
-            output_filename = os.path.join(
-                args.output_dir,
-                f"pdcl_dual_variables_{os.path.basename(checkpoint_path).replace('.pkl', '.png')}"
-            )
-            plt.savefig(output_filename, dpi=300, bbox_inches='tight')
-            logger.info(f"Saved visualization to {output_filename}")
+            try:
+                output_filename = os.path.join(
+                    args.output_dir,
+                    f"pdcl_dual_variables_{os.path.basename(checkpoint_path).replace('.pkl', '.png')}"
+                )
+                plt.savefig(output_filename, dpi=300, bbox_inches='tight')
+                print(f"Saved visualization to {output_filename}")
+                successful_plots += 1
+            except Exception as e:
+                print(f"Error saving visualization: {str(e)}")
+                # Try saving to current directory as fallback
+                try:
+                    fallback_filename = f"pdcl_dual_variables_{os.path.basename(checkpoint_path).replace('.pkl', '.png')}"
+                    plt.savefig(fallback_filename, dpi=300, bbox_inches='tight')
+                    print(f"Saved visualization to current directory: {fallback_filename}")
+                    successful_plots += 1
+                except Exception as e2:
+                    print(f"Could not save visualization even to current directory: {str(e2)}")
 
             # Show the plot if requested
             if args.show:
@@ -143,23 +176,34 @@ if __name__ == "__main__":
                 plt.close()
 
             # Also save the raw data as JSON for further analysis
-            json_output = os.path.join(
-                args.output_dir,
-                f"pdcl_dual_variables_{os.path.basename(checkpoint_path).replace('.pkl', '.json')}"
-            )
+            try:
+                json_output = os.path.join(
+                    args.output_dir,
+                    f"pdcl_dual_variables_{os.path.basename(checkpoint_path).replace('.pkl', '.json')}"
+                )
 
-            # Convert tensor keys to strings for JSON serialization
-            serializable_data = {
-                'iterations': iteration_history,
-                'dual_variables': {str(k): v for k, v in dual_var_history.items()}
-            }
+                # Convert tensor keys to strings for JSON serialization
+                serializable_data = {
+                    'iterations': iteration_history,
+                    'dual_variables': {str(k): v for k, v in dual_var_history.items()}
+                }
 
-            with open(json_output, 'w') as f:
-                json.dump(serializable_data, f, indent=2)
+                with open(json_output, 'w') as f:
+                    json.dump(serializable_data, f, indent=2)
 
-            logger.info(f"Saved raw data to {json_output}")
+                print(f"Saved raw data to {json_output}")
+            except Exception as e:
+                print(f"Error saving JSON data: {str(e)}")
+                # Try saving to current directory as fallback
+                try:
+                    fallback_json = f"pdcl_dual_variables_{os.path.basename(checkpoint_path).replace('.pkl', '.json')}"
+                    with open(fallback_json, 'w') as f:
+                        json.dump(serializable_data, f, indent=2)
+                    print(f"Saved JSON data to current directory: {fallback_json}")
+                except Exception as e2:
+                    print(f"Could not save JSON data even to current directory: {str(e2)}")
 
         except Exception as e:
-            logger.error(f"Error processing checkpoint {checkpoint_path}: {str(e)}")
+            print(f"Error processing checkpoint {checkpoint_path}: {str(e)}")
 
-    logger.info("Visualization complete!")
+    print(f"Visualization complete! Successfully generated {successful_plots} plots.")
