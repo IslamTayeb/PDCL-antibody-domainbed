@@ -283,11 +283,14 @@ def tables():
 
 
 def style():
+    from matplotlib import font_manager
+    for f in Path("/usr/share/fonts/truetype/msttcorefonts").glob("[Aa]rial*.ttf"):
+        font_manager.fontManager.addfont(str(f))
     plt.rcParams.update({"font.family": "sans-serif", "font.sans-serif": ["Arial", "DejaVu Sans"], "font.size": 8,
                          "axes.labelsize": 8, "xtick.labelsize": 8, "ytick.labelsize": 8, "legend.fontsize": 7,
                          "pdf.fonttype": 42, "axes.axisbelow": True, "axes.spines.top": False,
                          "axes.spines.right": False, "lines.linewidth": 1.3, "lines.markersize": 4,
-                         "legend.frameon": False})
+                         "legend.frameon": False, "mathtext.default": "regular"})
 
 
 MM = 1 / 25.4
@@ -297,7 +300,7 @@ def panels(n, h=70):
     fig, axes = plt.subplots(1, n, figsize=(180 * MM, h * MM), squeeze=False)
     for ax, letter in zip(axes[0], "abc"):
         ax.grid(color="gray", alpha=0.7, linewidth=0.4, zorder=0)
-        ax.text(-0.2, 1.12, letter, transform=ax.transAxes, fontweight="bold", fontsize=9)
+        ax.text(-0.2 if n < 3 else -0.3, 1.12, letter, transform=ax.transAxes, fontweight="bold", fontsize=9)
     return fig, axes[0]
 
 
@@ -322,26 +325,29 @@ def budget_axis(ax, budgets):
 
 def fig_trajectory():
     root = ROOTS[15000]
-    fig, (a, b) = panels(2)
-    for key, color, label in (("train_acc", GREY, "Training"), ("agg_val_acc", CYAN, "Validation"),
-                              ("agg_test_acc", RED, "Held-Out Round")):
-        steps, m, s = trajectory(root, "ERM", key, 100)
-        a.plot(steps / 1000, m, color=color, label=label, zorder=3)
-        a.fill_between(steps / 1000, m - s, m + s, color=color, alpha=0.25, linewidth=0, zorder=2)
-    a.set_ylabel("Accuracy (%)")
+    fig, (a, b, c) = panels(3)
+    curves = (("train_acc", GREY, "Training"), ("agg_val_acc", CYAN, "Validation"), ("agg_test_acc", RED, "Held-Out Round"))
+    for ax, keep in ((a, curves), (b, curves[1:])):
+        for key, color, label in keep:
+            steps, m, s = trajectory(root, "ERM", key, 100)
+            ax.plot(steps / 1000, m, color=color, label=label, zorder=3)
+            ax.fill_between(steps / 1000, m - s, m + s, color=color, alpha=0.25, linewidth=0, zorder=2)
+        ax.set_ylabel("Accuracy (%)")
+    b.set_ylim(62, 71)
     steps, m, s = trajectory(root, "ERM", "agg_val_loss")
-    b.plot(steps / 1000, m, color=NIGHT, zorder=3)
-    b.fill_between(steps / 1000, m - s, m + s, color=NIGHT, alpha=0.2, linewidth=0, zorder=2)
-    b.set_ylabel("Validation Loss")
+    c.plot(steps / 1000, m, color=NIGHT, zorder=3)
+    c.fill_between(steps / 1000, m - s, m + s, color=NIGHT, alpha=0.2, linewidth=0, zorder=2)
+    c.set_ylabel("Validation Loss")
+    top_legend(a, ncol=2)
     runs = load(root, "ERM")
-    top_legend(a, ncol=3)
-    for rule, style, label in (("val", "--", "Picked by Val. Accuracy"), ("vloss", ":", "Picked by Val. Loss")):
+    for rule, style_, label in (("val", "--", "Picked by Val. Accuracy"), ("vloss", ":", "Picked by Val. Loss")):
         st = np.mean([pick(r, "ERM", rule)["step"] + 1 for r in runs.values()]) / 1000
-        a.axvline(st, color="black", linestyle=style, linewidth=1, zorder=2)
-        b.axvline(st, color="black", linestyle=style, linewidth=1, zorder=2, label=label)
-    for ax in (a, b):
+        for ax in (b, c):
+            ax.axvline(st, color="black", linestyle=style_, linewidth=1, zorder=2, label=label if ax is c else None)
+    for ax in (a, b, c):
         ax.set_xlabel("Training Step (×10³)")
-    top_legend(b)
+    top_legend(b, ncol=2)
+    top_legend(c, ncol=1)
     save(fig, "fig_trajectory")
 
 
@@ -416,8 +422,8 @@ def fig_tuning():
     fig, (a, b) = panels(2)
     algs = ("ERM", "Finetune", "ER", "PDCL_RS")
     x = np.arange(len(algs))
-    for off, color, label, get in ((-0.12, GREY, "Learning Rate 5×10⁻⁵", lambda al: acc(15000, al, "vloss")),
-                                   (0.12, RED, "Learning Rate 1.5×10⁻⁵", lambda al: mse(seed_means(ROOTS[15000], LOW[al], "vloss")))):
+    for off, color, label, get in ((-0.12, GREY, r"Learning Rate 5×10$^{-5}$", lambda al: acc(15000, al, "vloss")),
+                                   (0.12, RED, r"Learning Rate 1.5×10$^{-5}$", lambda al: mse(seed_means(ROOTS[15000], LOW[al], "vloss")))):
         v = [get(al) for al in algs]
         a.errorbar(x + off, [m[0] for m in v], [m[1] for m in v], color=color, marker="o", linestyle="none",
                    capsize=3, label=label, zorder=3)
