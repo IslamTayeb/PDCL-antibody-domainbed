@@ -33,7 +33,7 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from domainbed import algorithms, datasets, hparams_registry
+from domainbed import algorithms, datasets, hparams_registry, streams
 from domainbed.lib import misc
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -47,8 +47,8 @@ PARAMS = ('emb_ab', 'emb_ag', 'c1w', 'c1b', 'c2w', 'c2b', 'fw', 'fb', 'cw', 'cb'
 # --------------------------------------------------------------------------
 # data
 # --------------------------------------------------------------------------
-def load_data(data_dir, device):
-    """Tokens and labels of the whole dataset, on the device, in env order."""
+def load_tokens(data_dir, device='cpu'):
+    """Tokens and labels of the whole dataset in round order (cached on disk)."""
     cache = Path(data_dir) / 'abrosetta_tokens.pt'
     if cache.exists():
         d = torch.load(cache)
@@ -69,6 +69,18 @@ def load_data(data_dir, device):
             sizes.append(len(env))
         d = {'tok': torch.cat(toks), 'y': torch.cat(ys), 'sizes': sizes}
         torch.save(d, cache)
+    return d
+
+
+def load_data(data_dir, device, stream='rounds', d=None):
+    """The dataset on the device, grouped into the tasks of the given stream."""
+    d = d or load_tokens(data_dir, device)
+    if stream != 'rounds':
+        order, sizes = streams.task_order(data_dir, stream)
+        order = torch.as_tensor(order)
+        d = {'tok': d['tok'][order], 'y': d['y'][order], 'sizes': sizes}
+        rate = [round(float(c.argmax(1).float().mean()), 3) for c in d['y'].split(sizes)]
+        print(f"stream {stream}: sizes {sizes}, binder rate {rate}", flush=True)
     sizes = d['sizes']
     tok = d['tok'].to(device)
     data = {
@@ -250,8 +262,10 @@ class Adam:
 # jobs
 # --------------------------------------------------------------------------
 class Job:
-    def __init__(self, algorithm, env, seed, steps, checkpoint_freq, hparams, out, data_dir):
+    def __init__(self, algorithm, env, seed, steps, checkpoint_freq, hparams, out, data_dir,
+                 stream='rounds', n_tasks=4):
         self.algorithm, self.env, self.seed, self.out = algorithm, env, seed, Path(out)
+        self.stream, self.n_tasks = stream, n_tasks
         self.test_envs = [env] if env >= 0 else []
         self.hparams_json = hparams
         self.hparams = hparams_registry.default_hparams(algorithm)
@@ -261,7 +275,7 @@ class Job:
         self.n_steps = steps or datasets.AbRosetta.N_STEPS
         self.freq = checkpoint_freq or datasets.AbRosetta.CHECKPOINT_FREQ
         self.hparams['n_steps'] = self.n_steps
-        self.train_envs = [e for e in range(4) if e not in self.test_envs]
+        self.train_envs = [e for e in range(n_tasks) if e not in self.test_envs]
         cls = algorithms.get_algorithm_class(algorithm)
         self.variant = algorithm if algorithm in ERM_FAMILY else ''
         if algorithm in ERM_FAMILY:
@@ -277,7 +291,8 @@ class Job:
     @property
     def group(self):
         return (self.kind, len(self.train_envs), self.n_steps, self.freq,
-                self.hparams['batch_size'], getattr(self, 'domain_steps', 0), self.variant)
+                self.hparams['batch_size'], getattr(self, 'domain_steps', 0), self.variant,
+                self.stream)
 
     def args_record(self, code_hash):
         return {
@@ -285,7 +300,7 @@ class Job:
             'code_hash': code_hash, 'data_dir': self.data_dir, 'dataset': 'AbRosetta',
             'holdout_fraction': HOLDOUT_FRACTION, 'hparams': self.hparams_json,
             'hparams_seed': 0, 'output_dir': str(self.out), 'seed': self.seed,
-            'steps': self.steps_arg, 'task': 'domain_generalization',
+            'steps': self.steps_arg, 'stream': self.stream, 'task': 'domain_generalization',
             'test_envs': self.test_envs, 'trial_seed': self.seed, 'use_esm': False,
         }
 
@@ -320,7 +335,8 @@ def partition_sizes(duals, adaptive, alpha, buffer_size):
 # one group of runs that share a schedule
 # --------------------------------------------------------------------------
 def run_group(jobs, data, device, code_hash):
-    kind, D, n_steps, freq, bs, domain_steps, variant = jobs[0].group
+    kind, D, n_steps, freq, bs, domain_steps, variant, _ = jobs[0].group
+    T = len(data['sizes'])                              # tasks in the stream
     M, N = len(jobs), data['tok'].size(0)
     sizes, offsets = data['sizes'], data['offsets']
     ar = torch.arange(M, device=device)
@@ -336,7 +352,7 @@ def run_group(jobs, data, device, code_hash):
     in_tab = torch.zeros(M, D, max(sizes), dtype=torch.long)
     part = torch.zeros(M, N, dtype=torch.long)          # 2 * env + (0 in, 1 out)
     for j, job in enumerate(jobs):
-        for e in range(4):
+        for e in range(T):
             keys_in, keys_out = split(job.seed, e)
             part[j, offsets[e] + np.array(keys_in)] = 2 * e
             part[j, offsets[e] + np.array(keys_out)] = 2 * e + 1
@@ -345,9 +361,9 @@ def run_group(jobs, data, device, code_hash):
             in_len[j, d] = len(keys_in)
             in_tab[j, d, :len(keys_in)] = torch.as_tensor(keys_in) + int(offsets[e])
     in_tab, part = in_tab.to(device), part.to(device)
-    part_count = torch.zeros(M, 8, device=device).scatter_add_(
+    part_count = torch.zeros(M, 2 * T, device=device).scatter_add_(
         1, part, torch.ones(M, N, device=device))
-    steps_per_epoch = min(len(split(jobs[0].seed, e)[0]) for e in range(4)) / bs
+    steps_per_epoch = min(len(split(jobs[0].seed, e)[0]) for e in range(T)) / bs
     label = data['y'].argmax(1)
 
     # ---- weights, optimizer, random streams ------------------------------
@@ -498,11 +514,11 @@ def run_group(jobs, data, device, code_hash):
         logits = forward_all(P, data)
         correct = (logits.argmax(2) == label).float()
         ce = -(F.log_softmax(logits, dim=2) * data['y']).sum(2)
-        acc = (torch.zeros(M, 8, device=device).scatter_add_(1, part, correct)
+        acc = (torch.zeros(M, 2 * T, device=device).scatter_add_(1, part, correct)
                / part_count).cpu().numpy()
-        loss = (torch.zeros(M, 8, device=device).scatter_add_(1, part, ce)
+        loss = (torch.zeros(M, 2 * T, device=device).scatter_add_(1, part, ce)
                 / part_count).cpu().numpy()
-        n_correct = torch.zeros(M, 8, device=device).scatter_add_(1, part, correct).cpu().numpy()
+        n_correct = torch.zeros(M, 2 * T, device=device).scatter_add_(1, part, correct).cpu().numpy()
         counts = part_count.cpu().numpy()
         means = {k: (v / max(n_acc, 1)).cpu().numpy() for k, v in sums.items()}
         if sequential:
@@ -519,7 +535,7 @@ def run_group(jobs, data, device, code_hash):
                     r[f'dual_{k}'] = float(state['dual'][j, k])
                     r[f'eps_{k}'] = float(state['eps'][j, k])
                     r[f'buf_{k}'] = float(state['buf'][j, k])
-            for e in range(4):
+            for e in range(T):
                 r[f'env{e}_in_acc'] = float(acc[j, 2 * e])
                 r[f'env{e}_out_acc'] = float(acc[j, 2 * e + 1])
             val = [2 * e + 1 for e in job.train_envs]
@@ -624,6 +640,8 @@ def run_group(jobs, data, device, code_hash):
 # --------------------------------------------------------------------------
 def build_jobs(spec, data_dir):
     jobs = []
+    stream = spec.get('stream') or 'rounds'
+    n_tasks = 4 if stream == 'rounds' else len(streams.task_order(data_dir, stream)[1])
     envs = spec.get('envs', [0, 1, 2, 3])
     for alg, env, seed in itertools.product(spec['algorithms'], envs, spec.get('seeds', [0, 1, 2])):
         tag = spec.get('tag')
@@ -633,7 +651,8 @@ def build_jobs(spec, data_dir):
             continue
         hp = spec.get('hparams')
         jobs.append(Job(alg, env, seed, spec.get('steps'), spec.get('checkpoint_freq'),
-                        json.dumps(hp) if isinstance(hp, dict) else hp, out, data_dir))
+                        json.dumps(hp) if isinstance(hp, dict) else hp, out, data_dir,
+                        stream, n_tasks))
     return jobs
 
 
@@ -649,6 +668,8 @@ def main():
     p.add_argument('--checkpoint_freq', type=int, default=None)
     p.add_argument('--hparams', default=None)
     p.add_argument('--tag', default=None)
+    p.add_argument('--stream', default='rounds',
+                   help='how the examples are grouped into tasks (see domainbed/streams.py)')
     p.add_argument('--max_models', type=int, default=96, help='runs trained together')
     p.add_argument('--dry_run', action='store_true')
     args = p.parse_args()
@@ -658,7 +679,7 @@ def main():
     else:
         specs = [{k: getattr(args, k) for k in (
             'algorithms', 'envs', 'seeds', 'output_root', 'steps', 'checkpoint_freq',
-            'hparams', 'tag')}]
+            'hparams', 'tag', 'stream')}]
     jobs = [job for spec in specs for job in build_jobs(spec, args.data_dir)]
     groups = {}
     for job in jobs:
@@ -679,8 +700,11 @@ def main():
     code_files = sorted(f for f in root.rglob('*.py')
                         if f.parent != root / 'scripts' or f.name in ('train.py', 'train_batched.py'))
     code_hash = hashlib.sha256(b''.join(f.read_bytes() for f in code_files)).hexdigest()[:12]
-    data = load_data(args.data_dir, device)
+    tokens, data, loaded = load_tokens(args.data_dir, device), None, None
     for i, chunk in enumerate(chunks):
+        if chunk[0].stream != loaded:
+            loaded = chunk[0].stream
+            data = load_data(args.data_dir, device, loaded, tokens)
         start = time.time()
         print(f"batch {i + 1}/{len(chunks)}: {len(chunk)} runs {chunk[0].group}", flush=True)
         run_group(chunk, data, device, code_hash)
