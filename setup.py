@@ -1,11 +1,3 @@
 from setuptools import setup, find_packages
 
-setup(
-    name='antibody_domainbed',
-    version='v0.10',
-    packages=find_packages(),
-    description='Antibody DomainBed',
-    include_package_data=True,
-    test_suite='nose.collector',
-    tests_require=['nose'],
-)
+setup(name='pdcl_antibody_domainbed', version='1.0', packages=find_packages())

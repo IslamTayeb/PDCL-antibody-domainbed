@@ -1,0 +1,580 @@
+% refs.bib -- corrected bibliography for "Primal Dual Continual Learning for Robust Antibody Design"
+% Every entry was checked on 2026-11-17 against arXiv API / Crossref / doi.org / proceedings.neurips.cc /
+% proceedings.mlr.press / OpenReview / OpenAlex / Semantic Scholar. See refs_audit.md for what changed.
+% Key convention: firstauthorYEARfirstword (YEAR = year of the cited/published version).
+
+% ---------------------------------------------------------------- core method
+
+@misc{elenter2023primal,
+  title         = {Primal Dual Continual Learning: Balancing Stability and Plasticity through Adaptive Memory Allocation},
+  author        = {Elenter, Juan and NaderiAlizadeh, Navid and Javidi, Tara and Ribeiro, Alejandro},
+  year          = {2023},
+  eprint        = {2310.00154},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  note          = {arXiv:2310.00154}
+}
+
+@inproceedings{elenter2022lagrangian,
+  title     = {A {L}agrangian Duality Approach to Active Learning},
+  author    = {Elenter, Juan and NaderiAlizadeh, Navid and Ribeiro, Alejandro},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {35},
+  pages     = {37575--37589},
+  year      = {2022}
+}
+
+@article{chamon2023constrained,
+  title   = {Constrained Learning with Non-Convex Losses},
+  author  = {Chamon, Luiz F. O. and Paternain, Santiago and Calvo-Fullana, Miguel and Ribeiro, Alejandro},
+  journal = {IEEE Transactions on Information Theory},
+  volume  = {69},
+  number  = {3},
+  pages   = {1739--1760},
+  year    = {2023},
+  doi     = {10.1109/TIT.2022.3187948}
+}
+
+@inproceedings{chamon2020probably,
+  title     = {Probably Approximately Correct Constrained Learning},
+  author    = {Chamon, Luiz F. O. and Ribeiro, Alejandro},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {33},
+  pages     = {16722--16735},
+  year      = {2020}
+}
+
+@inproceedings{hounie2023resilient,
+  title     = {Resilient Constrained Learning},
+  author    = {Hounie, Ignacio and Ribeiro, Alejandro and Chamon, Luiz F. O.},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {36},
+  pages     = {71767--71798},
+  year      = {2023}
+}
+
+@inproceedings{peng2023ideal,
+  title     = {The Ideal Continual Learner: An Agent That Never Forgets},
+  author    = {Peng, Liangzu and Giampouras, Paris V. and Vidal, Ren{\'e}},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {202},
+  pages     = {27585--27610},
+  year      = {2023}
+}
+
+@article{nedic2009approximate,
+  title   = {Approximate Primal Solutions and Rate Analysis for Dual Subgradient Methods},
+  author  = {Nedi{\'c}, Angelia and Ozdaglar, Asuman},
+  journal = {SIAM Journal on Optimization},
+  volume  = {19},
+  number  = {4},
+  pages   = {1757--1780},
+  year    = {2009},
+  doi     = {10.1137/070708111}
+}
+
+@book{shor1998nondifferentiable,
+  title     = {Nondifferentiable Optimization and Polynomial Problems},
+  author    = {Shor, Naum Z.},
+  series    = {Nonconvex Optimization and Its Applications},
+  volume    = {24},
+  publisher = {Springer},
+  address   = {Boston, MA},
+  year      = {1998},
+  doi       = {10.1007/978-1-4757-6015-6}
+}
+
+@article{bonnans1998optimization,
+  title   = {Optimization Problems with Perturbations: A Guided Tour},
+  author  = {Bonnans, J. Fr{\'e}d{\'e}ric and Shapiro, Alexander},
+  journal = {SIAM Review},
+  volume  = {40},
+  number  = {2},
+  pages   = {228--264},
+  year    = {1998},
+  doi     = {10.1137/S0036144596302644}
+}
+
+@article{guigues2021inexact,
+  title   = {Inexact Stochastic Mirror Descent for Two-Stage Nonlinear Stochastic Programs},
+  author  = {Guigues, Vincent},
+  journal = {Mathematical Programming},
+  volume  = {187},
+  number  = {1--2},
+  pages   = {533--577},
+  year    = {2021},
+  doi     = {10.1007/s10107-020-01490-5},
+  note    = {arXiv:1805.11732}
+}
+
+@inproceedings{kingma2015adam,
+  title     = {Adam: A Method for Stochastic Optimization},
+  author    = {Kingma, Diederik P. and Ba, Jimmy},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2015},
+  note      = {arXiv:1412.6980}
+}
+
+% ---------------------------------------------------------------- continual learning
+
+@article{kirkpatrick2017overcoming,
+  title   = {Overcoming Catastrophic Forgetting in Neural Networks},
+  author  = {Kirkpatrick, James and Pascanu, Razvan and Rabinowitz, Neil and Veness, Joel and Desjardins, Guillaume and Rusu, Andrei A. and Milan, Kieran and Quan, John and Ramalho, Tiago and Grabska-Barwinska, Agnieszka and Hassabis, Demis and Clopath, Claudia and Kumaran, Dharshan and Hadsell, Raia},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume  = {114},
+  number  = {13},
+  pages   = {3521--3526},
+  year    = {2017},
+  doi     = {10.1073/pnas.1611835114}
+}
+
+@inproceedings{lopezpaz2017gradient,
+  title     = {Gradient Episodic Memory for Continual Learning},
+  author    = {Lopez-Paz, David and Ranzato, Marc'Aurelio},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {30},
+  pages     = {6467--6476},
+  year      = {2017}
+}
+
+@inproceedings{chaudhry2019efficient,
+  title     = {Efficient Lifelong Learning with {A-GEM}},
+  author    = {Chaudhry, Arslan and Ranzato, Marc'Aurelio and Rohrbach, Marcus and Elhoseiny, Mohamed},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2019},
+  note      = {arXiv:1812.00420}
+}
+
+@misc{chaudhry2019tiny,
+  title         = {On Tiny Episodic Memories in Continual Learning},
+  author        = {Chaudhry, Arslan and Rohrbach, Marcus and Elhoseiny, Mohamed and Ajanthan, Thalaiyasingam and Dokania, Puneet K. and Torr, Philip H. S. and Ranzato, Marc'Aurelio},
+  year          = {2019},
+  eprint        = {1902.10486},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  note          = {arXiv:1902.10486}
+}
+
+@inproceedings{rolnick2019experience,
+  title     = {Experience Replay for Continual Learning},
+  author    = {Rolnick, David and Ahuja, Arun and Schwarz, Jonathan and Lillicrap, Timothy P. and Wayne, Greg},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {32},
+  pages     = {348--358},
+  year      = {2019}
+}
+
+@inproceedings{aljundi2019gradient,
+  title     = {Gradient Based Sample Selection for Online Continual Learning},
+  author    = {Aljundi, Rahaf and Lin, Min and Goujaud, Baptiste and Bengio, Yoshua},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {32},
+  pages     = {11816--11825},
+  year      = {2019},
+  note      = {arXiv:1903.08671; v1 was titled ``Online continual learning with no task boundaries''}
+}
+
+@article{delange2022continual,
+  title   = {A Continual Learning Survey: Defying Forgetting in Classification Tasks},
+  author  = {De Lange, Matthias and Aljundi, Rahaf and Masana, Marc and Parisot, Sarah and Jia, Xu and Leonardis, Ale{\v{s}} and Slabaugh, Gregory and Tuytelaars, Tinne},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume  = {44},
+  number  = {7},
+  pages   = {3366--3385},
+  year    = {2022},
+  doi     = {10.1109/TPAMI.2021.3057446}
+}
+
+@article{masana2023class,
+  title   = {Class-Incremental Learning: Survey and Performance Evaluation on Image Classification},
+  author  = {Masana, Marc and Liu, Xialei and Twardowski, Bart{\l}omiej and Menta, Mikel and Bagdanov, Andrew D. and van de Weijer, Joost},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume  = {45},
+  number  = {5},
+  pages   = {5513--5533},
+  year    = {2023},
+  doi     = {10.1109/TPAMI.2022.3213473}
+}
+
+@article{zhou2024class,
+  title   = {Class-Incremental Learning: A Survey},
+  author  = {Zhou, Da-Wei and Wang, Qi-Wei and Qi, Zhi-Hong and Ye, Han-Jia and Zhan, De-Chuan and Liu, Ziwei},
+  journal = {IEEE Transactions on Pattern Analysis and Machine Intelligence},
+  volume  = {46},
+  number  = {12},
+  pages   = {9851--9873},
+  year    = {2024},
+  doi     = {10.1109/TPAMI.2024.3429383},
+  note    = {arXiv:2302.03648 (v1 titled ``Deep Class-Incremental Learning: A Survey'')}
+}
+
+@inproceedings{borsos2020coresets,
+  title     = {Coresets via Bilevel Optimization for Continual Learning and Streaming},
+  author    = {Borsos, Zal{\'a}n and Mutn{\'y}, Mojm{\'i}r and Krause, Andreas},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {33},
+  pages     = {14879--14890},
+  year      = {2020}
+}
+
+@inproceedings{ke2022continual,
+  title     = {Continual Training of Language Models for Few-Shot Learning},
+  author    = {Ke, Zixuan and Lin, Haowei and Shao, Yijia and Xu, Hu and Shu, Lei and Liu, Bing},
+  booktitle = {Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing},
+  pages     = {10205--10216},
+  year      = {2022},
+  doi       = {10.18653/v1/2022.emnlp-main.695}
+}
+
+% ---------------------------------------------------------------- sample selection / coresets / active learning
+
+@inproceedings{sener2018active,
+  title     = {Active Learning for Convolutional Neural Networks: A Core-Set Approach},
+  author    = {Sener, Ozan and Savarese, Silvio},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2018},
+  note      = {arXiv:1708.00489}
+}
+
+@article{gonzalez1985clustering,
+  title   = {Clustering to Minimize the Maximum Intercluster Distance},
+  author  = {Gonzalez, Teofilo F.},
+  journal = {Theoretical Computer Science},
+  volume  = {38},
+  pages   = {293--306},
+  year    = {1985},
+  doi     = {10.1016/0304-3975(85)90224-5}
+}
+
+@techreport{settles2009active,
+  title       = {Active Learning Literature Survey},
+  author      = {Settles, Burr},
+  institution = {University of Wisconsin--Madison, Department of Computer Sciences},
+  type        = {Computer Sciences Technical Report},
+  number      = {1648},
+  year        = {2009}
+}
+
+@inproceedings{katharopoulos2018not,
+  title     = {Not All Samples Are Created Equal: Deep Learning with Importance Sampling},
+  author    = {Katharopoulos, Angelos and Fleuret, Fran{\c{c}}ois},
+  booktitle = {Proceedings of the 35th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {80},
+  pages     = {2525--2534},
+  year      = {2018}
+}
+
+@inproceedings{farquhar2021statistical,
+  title     = {On Statistical Bias in Active Learning: How and When to Fix It},
+  author    = {Farquhar, Sebastian and Gal, Yarin and Rainforth, Tom},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2021},
+  note      = {arXiv:2101.11665}
+}
+
+@inproceedings{toneva2019empirical,
+  title     = {An Empirical Study of Example Forgetting during Deep Neural Network Learning},
+  author    = {Toneva, Mariya and Sordoni, Alessandro and Tachet des Combes, Remi and Trischler, Adam and Bengio, Yoshua and Gordon, Geoffrey J.},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2019},
+  note      = {arXiv:1812.05159}
+}
+
+@inproceedings{wang2022deep,
+  title     = {Deep Active Learning by Leveraging Training Dynamics},
+  author    = {Wang, Haonan and Huang, Wei and Wu, Ziwei and Tong, Hanghang and Margenot, Andrew J. and He, Jingrui},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {35},
+  pages     = {25171--25184},
+  year      = {2022},
+  note      = {arXiv:2110.08611}
+}
+
+@inproceedings{ash2020deep,
+  title     = {Deep Batch Active Learning by Diverse, Uncertain Gradient Lower Bounds},
+  author    = {Ash, Jordan T. and Zhang, Chicheng and Krishnamurthy, Akshay and Langford, John and Agarwal, Alekh},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2020},
+  note      = {arXiv:1906.03671}
+}
+
+% ---------------------------------------------------------------- domain generalization
+
+@inproceedings{gulrajani2021search,
+  title     = {In Search of Lost Domain Generalization},
+  author    = {Gulrajani, Ishaan and Lopez-Paz, David},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2021},
+  note      = {arXiv:2007.01434}
+}
+
+@inproceedings{vapnik1991principles,
+  title     = {Principles of Risk Minimization for Learning Theory},
+  author    = {Vapnik, Vladimir},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {4},
+  pages     = {831--838},
+  publisher = {Morgan-Kaufmann},
+  year      = {1991}
+}
+
+@inproceedings{blanchard2011generalizing,
+  title     = {Generalizing from Several Related Classification Tasks to a New Unlabeled Sample},
+  author    = {Blanchard, Gilles and Lee, Gyemin and Scott, Clayton},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {24},
+  pages     = {2178--2186},
+  year      = {2011}
+}
+
+@inproceedings{muandet2013domain,
+  title     = {Domain Generalization via Invariant Feature Representation},
+  author    = {Muandet, Krikamol and Balduzzi, David and Sch{\"o}lkopf, Bernhard},
+  booktitle = {Proceedings of the 30th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {28},
+  pages     = {10--18},
+  year      = {2013}
+}
+
+@misc{arjovsky2019invariant,
+  title         = {Invariant Risk Minimization},
+  author        = {Arjovsky, Martin and Bottou, L{\'e}on and Gulrajani, Ishaan and Lopez-Paz, David},
+  year          = {2019},
+  eprint        = {1907.02893},
+  archivePrefix = {arXiv},
+  primaryClass  = {stat.ML},
+  note          = {arXiv:1907.02893}
+}
+
+@inproceedings{krueger2021out,
+  title     = {Out-of-Distribution Generalization via Risk Extrapolation ({REx})},
+  author    = {Krueger, David and Caballero, Ethan and Jacobsen, Joern-Henrik and Zhang, Amy and Binas, Jonathan and Zhang, Dinghuai and Le Priol, Remi and Courville, Aaron},
+  booktitle = {Proceedings of the 38th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {139},
+  pages     = {5815--5826},
+  year      = {2021}
+}
+
+@inproceedings{sun2016deep,
+  title     = {Deep {CORAL}: Correlation Alignment for Deep Domain Adaptation},
+  author    = {Sun, Baochen and Saenko, Kate},
+  booktitle = {Computer Vision -- ECCV 2016 Workshops},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9915},
+  pages     = {443--450},
+  publisher = {Springer},
+  year      = {2016},
+  doi       = {10.1007/978-3-319-49409-8_35},
+  note      = {arXiv:1607.01719}
+}
+
+@inproceedings{li2018domain,
+  title     = {Domain Generalization with Adversarial Feature Learning},
+  author    = {Li, Haoliang and Pan, Sinno Jialin and Wang, Shiqi and Kot, Alex C.},
+  booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages     = {5400--5409},
+  year      = {2018},
+  doi       = {10.1109/CVPR.2018.00566}
+}
+
+@inproceedings{shi2022gradient,
+  title     = {Gradient Matching for Domain Generalization},
+  author    = {Shi, Yuge and Seely, Jeffrey and Torr, Philip H. S. and Siddharth, N. and Hannun, Awni and Usunier, Nicolas and Synnaeve, Gabriel},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2022},
+  note      = {arXiv:2104.09937}
+}
+
+@inproceedings{arpit2022ensemble,
+  title     = {Ensemble of Averages: Improving Model Selection and Boosting Performance in Domain Generalization},
+  author    = {Arpit, Devansh and Wang, Huan and Zhou, Yingbo and Xiong, Caiming},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {35},
+  pages     = {8265--8277},
+  year      = {2022},
+  note      = {arXiv:2110.10832}
+}
+
+@inproceedings{rame2022diverse,
+  title     = {Diverse Weight Averaging for Out-of-Distribution Generalization},
+  author    = {Ram{\'e}, Alexandre and Kirchmeyer, Matthieu and Rahier, Thibaud and Rakotomamonjy, Alain and Gallinari, Patrick and Cord, Matthieu},
+  booktitle = {Advances in Neural Information Processing Systems},
+  volume    = {35},
+  pages     = {10821--10836},
+  year      = {2022}
+}
+
+@misc{bommasani2021opportunities,
+  title         = {On the Opportunities and Risks of Foundation Models},
+  author        = {Bommasani, Rishi and Hudson, Drew A. and Adeli, Ehsan and Altman, Russ and Arora, Simran and von Arx, Sydney and Bernstein, Michael S. and Bohg, Jeannette and Bosselut, Antoine and Brunskill, Emma and others},
+  year          = {2021},
+  eprint        = {2108.07258},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  note          = {arXiv:2108.07258}
+}
+
+% ---------------------------------------------------------------- antibodies / proteins
+
+@misc{tagasovska2024antibody,
+  title         = {Antibody {DomainBed}: Out-of-Distribution Generalization in Therapeutic Protein Design},
+  author        = {Tagasovska, Nata{\v{s}}a and Park, Ji Won and Kirchmeyer, Matthieu and Frey, Nathan C. and Watkins, Andrew Martin and Ismail, Aya Abdelsalam and Jamasb, Arian Rokkum and Lee, Edith and Bryson, Tyler and Ra, Stephen and Cho, Kyunghyun},
+  year          = {2024},
+  eprint        = {2407.21028},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-bio.BM},
+  note          = {arXiv:2407.21028}
+}
+
+@inproceedings{frey2024protein,
+  title     = {Protein Discovery with Discrete Walk-Jump Sampling},
+  author    = {Frey, Nathan C. and Berenberg, Daniel and Zadorozhny, Karina and Kleinhenz, Joseph and Lafrance-Vanasse, Julien and Hotzel, Isidro and Wu, Yan and Ra, Stephen and Bonneau, Richard and Cho, Kyunghyun and Loukas, Andreas and Gligorijevic, Vladimir and Saremi, Saeed},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2024},
+  note      = {arXiv:2306.12360}
+}
+
+@article{lin2023evolutionary,
+  title   = {Evolutionary-Scale Prediction of Atomic-Level Protein Structure with a Language Model},
+  author  = {Lin, Zeming and Akin, Halil and Rao, Roshan and Hie, Brian and Zhu, Zhongkai and Lu, Wenting and Smetanin, Nikita and Verkuil, Robert and Kabeli, Ori and Shmueli, Yaniv and dos Santos Costa, Allan and Fazel-Zarandi, Maryam and Sercu, Tom and Candido, Salvatore and Rives, Alexander},
+  journal = {Science},
+  volume  = {379},
+  number  = {6637},
+  pages   = {1123--1130},
+  year    = {2023},
+  doi     = {10.1126/science.ade2574}
+}
+
+@article{jumper2021highly,
+  title   = {Highly Accurate Protein Structure Prediction with {AlphaFold}},
+  author  = {Jumper, John and Evans, Richard and Pritzel, Alexander and Green, Tim and Figurnov, Michael and Ronneberger, Olaf and Tunyasuvunakool, Kathryn and Bates, Russ and {\v{Z}}{\'i}dek, Augustin and Potapenko, Anna and others},
+  journal = {Nature},
+  volume  = {596},
+  number  = {7873},
+  pages   = {583--589},
+  year    = {2021},
+  doi     = {10.1038/s41586-021-03819-2}
+}
+
+@inproceedings{zhang2023protein,
+  title     = {Protein Representation Learning by Geometric Structure Pretraining},
+  author    = {Zhang, Zuobai and Xu, Minghao and Jamasb, Arian and Chenthamarakshan, Vijil and Lozano, Aurelie and Das, Payel and Tang, Jian},
+  booktitle = {International Conference on Learning Representations},
+  year      = {2023},
+  note      = {arXiv:2203.06125}
+}
+
+@article{mason2021optimization,
+  title   = {Optimization of Therapeutic Antibodies by Predicting Antigen Specificity from Antibody Sequence via Deep Learning},
+  author  = {Mason, Derek M. and Friedensohn, Simon and Weber, C{\'e}dric R. and Jordi, Christian and Wagner, Bastian and Meng, Simon M. and Ehling, Roy A. and Bonati, Lucia and Dahinden, Jan and Gainza, Pablo and Correia, Bruno E. and Reddy, Sai T.},
+  journal = {Nature Biomedical Engineering},
+  volume  = {5},
+  number  = {6},
+  pages   = {600--612},
+  year    = {2021},
+  doi     = {10.1038/s41551-021-00699-9}
+}
+
+@article{jiang2021could,
+  title   = {Could Graph Neural Networks Learn Better Molecular Representation for Drug Discovery? {A} Comparison Study of Descriptor-Based and Graph-Based Models},
+  author  = {Jiang, Dejun and Wu, Zhenxing and Hsieh, Chang-Yu and Chen, Guangyong and Liao, Ben and Wang, Zhe and Shen, Chao and Cao, Dongsheng and Wu, Jian and Hou, Tingjun},
+  journal = {Journal of Cheminformatics},
+  volume  = {13},
+  number  = {1},
+  pages   = {12},
+  year    = {2021},
+  doi     = {10.1186/s13321-020-00479-8}
+}
+
+@misc{park2022propertydag,
+  title         = {{PropertyDAG}: Multi-Objective {B}ayesian Optimization of Partially Ordered, Mixed-Variable Properties for Biological Sequence Design},
+  author        = {Park, Ji Won and Stanton, Samuel and Saremi, Saeed and Watkins, Andrew and Dwyer, Henri and Gligorijevic, Vladimir and Bonneau, Richard and Ra, Stephen and Cho, Kyunghyun},
+  year          = {2022},
+  eprint        = {2210.04096},
+  archivePrefix = {arXiv},
+  primaryClass  = {q-bio.QM},
+  note          = {arXiv:2210.04096; NeurIPS 2022 AI for Science Workshop}
+}
+
+@inproceedings{stanton2022accelerating,
+  title     = {Accelerating {B}ayesian Optimization for Biological Sequence Design with Denoising Autoencoders},
+  author    = {Stanton, Samuel and Maddox, Wesley and Gruver, Nate and Maffettone, Phillip and Delaney, Emily and Greenside, Peyton and Wilson, Andrew Gordon},
+  booktitle = {Proceedings of the 39th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {162},
+  pages     = {20459--20478},
+  year      = {2022}
+}
+
+@article{prihoda2022biophi,
+  title   = {{BioPhi}: A Platform for Antibody Design, Humanization, and Humanness Evaluation Based on Natural Antibody Repertoires and Deep Learning},
+  author  = {Prihoda, David and Maamary, Jad and Waight, Andrew and Juan, Veronica and Fayadat-Dilman, Laurence and Svozil, Daniel and Bitton, Danny A.},
+  journal = {mAbs},
+  volume  = {14},
+  number  = {1},
+  pages   = {2020203},
+  year    = {2022},
+  doi     = {10.1080/19420862.2021.2020203}
+}
+
+@article{singh2018monoclonal,
+  title   = {Monoclonal Antibodies: A Review},
+  author  = {Singh, Surjit and Kumar, Nitish K. and Dwiwedi, Pradeep and Charan, Jaykaran and Kaur, Rimplejeet and Sidhu, Preeti and Chugh, Vinay K.},
+  journal = {Current Clinical Pharmacology},
+  volume  = {13},
+  number  = {2},
+  pages   = {85--99},
+  year    = {2018},
+  doi     = {10.2174/1574884712666170809124728}
+}
+
+@article{raybould2020thera,
+  title   = {{Thera-SAbDab}: The Therapeutic Structural Antibody Database},
+  author  = {Raybould, Matthew I. J. and Marks, Claire and Lewis, Alan P. and Shi, Jiye and Bujotzek, Alexander and Taddese, Bruck and Deane, Charlotte M.},
+  journal = {Nucleic Acids Research},
+  volume  = {48},
+  number  = {D1},
+  pages   = {D383--D388},
+  year    = {2020},
+  doi     = {10.1093/nar/gkz827}
+}
+
+@inproceedings{melnyk2023reprogramming,
+  title     = {Reprogramming Pretrained Language Models for Antibody Sequence Infilling},
+  author    = {Melnyk, Igor and Chenthamarakshan, Vijil and Chen, Pin-Yu and Das, Payel and Dhurandhar, Amit and Padhi, Inkit and Das, Devleena},
+  booktitle = {Proceedings of the 40th International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {202},
+  pages     = {24398--24419},
+  year      = {2023}
+}
+
+@article{hummer2025investigating,
+  title   = {Investigating the Volume and Diversity of Data Needed for Generalizable Antibody--Antigen {$\Delta\Delta G$} Prediction},
+  author  = {Hummer, Alissa M. and Schneider, Constantin and Chinery, Lewis and Deane, Charlotte M.},
+  journal = {Nature Computational Science},
+  volume  = {5},
+  number  = {8},
+  pages   = {635--647},
+  year    = {2025},
+  doi     = {10.1038/s43588-025-00823-8},
+  note    = {Preprint: bioRxiv 2023.05.17.541222 (2023)}
+}
+
+@inproceedings{sagawa2020distributionally,
+  title={Distributionally Robust Neural Networks for Group Shifts: On the Importance of Regularization for Worst-Case Generalization},
+  author={Sagawa, Shiori and Koh, Pang Wei and Hashimoto, Tatsunori B. and Liang, Percy},
+  booktitle={International Conference on Learning Representations},
+  year={2020}
+}
+
+@inproceedings{pezeshki2021gradient,
+  title={Gradient Starvation: A Learning Proclivity in Neural Networks},
+  author={Pezeshki, Mohammad and Kaba, S{\'e}kou-Oumar and Bengio, Yoshua and Courville, Aaron and Precup, Doina and Lajoie, Guillaume},
+  booktitle={Advances in Neural Information Processing Systems},
+  year={2021}
+}

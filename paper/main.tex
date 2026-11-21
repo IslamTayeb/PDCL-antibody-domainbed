@@ -1,0 +1,208 @@
+\documentclass[10pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[round,authoryear]{natbib}
+\usepackage{amsmath,amssymb,booktabs,graphicx}
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue}
+\setlength{\parskip}{0.35em}
+
+\input{generated/numbers.tex}
+\newcommand{\num}[1]{\csname num@#1\endcsname}
+
+\title{Does Primal-Dual Continual Learning Help Across Antibody Design Rounds?}
+\author{Islam Tayeb\\Department of Computer Science\\Duke University\\\texttt{islam.tayeb@duke.edu}
+\and Navid NaderiAlizadeh\\Department of Biostatistics \& Bioinformatics\\Duke University School of Medicine\\\texttt{navid.naderi@duke.edu}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Surrogate models in antibody design are retrained after every design round. Primal-dual continual learning (PDCL) constrains the loss on earlier rounds and weights a replay memory by the resulting dual variables, which makes it a natural candidate for this setting. We test it on Antibody DomainBed against joint training, sequential fine-tuning and plain replay, with ten seeds and six training lengths. A fair test first required a change to model selection. Held-out accuracy peaks after about \num{erm_peak_step} steps and then falls by \num{erm_drop} points while validation accuracy stays flat, so the benchmark's selection rule picks overfit checkpoints; validation loss does not. Under the corrected protocol PDCL matches fine-tuning with no memory at every training length (within \num{pdcl_ft_absmax} points) and after tuning. Dual weighting does remove the \num{er_ft_range} points that plain replay costs, but only by leaving the memory almost unused. Sequential training trails joint training by about one point.
+\end{abstract}
+
+\section{Introduction}
+
+An antibody design campaign runs in rounds. A generative model proposes candidates, a surrogate predictor ranks them, a subset is measured, and the measurements update the models before the next round \citep{park2022propertydag,stanton2022accelerating}. Each round shifts the proposal distribution, so the surrogate has to stay accurate on sequences unlike its training data. Antibody DomainBed \citep{tagasovska2024antibody} turns this into a benchmark with four rounds as environments.
+
+The benchmark trains on all available rounds at once. In a campaign the rounds arrive in order, which is the setting of continual learning \citep{kirkpatrick2017overcoming,delange2022continual}. Primal-dual continual learning \citep[PDCL;][]{elenter2023primal} looks well suited to it. It minimizes the loss on the new round subject to a bound on the loss of each earlier round, and its dual variables say how costly each earlier round is to retain.
+
+We ask one question: does PDCL help a surrogate that sees the design rounds one at a time? Answering it took \num{n_runs} training runs and produced three findings.
+
+\emph{The benchmark's model selection hides overfitting.} Accuracy on a held-out round peaks early and then decays, and validation accuracy on the training rounds does not move (Section~\ref{sec:selection}). Selected that way, results depend on how long a method was trained: V-REx, GroupDRO and CORAL beat joint ERM by \num{dg_long_val_range} points at $15{,}000$ steps and by at most \num{dg_short_val_absmax} at shorter lengths. Selecting by validation loss removes the dependence. We use it for everything that follows.
+
+\emph{PDCL equals fine-tuning.} At six training lengths, PDCL and sequential fine-tuning with no memory differ by at most \num{pdcl_ft_absmax} points on held-out rounds (Section~\ref{sec:pdcl}). Tuning the learning rate, the dual step size, the constraint level and the memory size does not separate them.
+
+\emph{The reason is visible in the dual variables.} Plain replay overfits its 200 stored examples and loses \num{er_ft_range} points against no memory at all. PDCL avoids that loss because its constraints are nearly satisfied without intervention, so the dual variables stay near zero and the memory receives almost no weight (Section~\ref{sec:why}). The optimization works as designed. On this benchmark there is little for it to do.
+
+\section{Primal-dual continual learning}
+\label{sec:method}
+
+\citet{elenter2023primal} cast continual learning as a constrained problem. When round $t$ arrives, the learner minimizes the loss on round $t$ subject to the loss on every earlier round staying below a tolerance:
+\begin{equation}
+\min_{\theta}\ \mathbb{E}_{\mathcal{D}_t}\big[\ell(f_\theta(x),y)\big]
+\quad\text{s.t.}\quad
+\mathbb{E}_{\mathcal{D}_k}\big[\ell(f_\theta(x),y)\big]\le\epsilon_k,\qquad k=1,\dots,t-1 .
+\label{eq:problem}
+\end{equation}
+Earlier rounds are available only through a memory $\mathcal{B}=\bigcup_{k<t}\mathcal{B}_k$ of stored examples. With dual variables $\lambda_k\ge 0$, the empirical Lagrangian is
+\begin{equation}
+\hat{L}(\theta,\lambda)=\hat{\ell}_t(\theta)+\sum_{k<t}\lambda_k\big(\hat{\ell}_k(\theta)-\epsilon_k\big),
+\label{eq:lagrangian}
+\end{equation}
+where $\hat{\ell}_t$ is the loss on a minibatch of the current round and $\hat{\ell}_k$ the loss on a minibatch from $\mathcal{B}_k$. Training alternates a gradient step on $\theta$ with projected dual ascent,
+\begin{equation}
+\lambda_k\leftarrow\big[\lambda_k+\eta_d\,(\hat{\ell}_k(\theta)-\epsilon_k)\big]_+ .
+\label{eq:dual}
+\end{equation}
+Experience replay \citep[ER;][]{chaudhry2019tiny} is the special case $\lambda_k=1$ with no dual update, and fine-tuning is $\lambda_k=0$. A dual variable grows while its round's memory loss exceeds $\epsilon_k$ and shrinks to zero once the constraint holds, so $\lambda_k$ is the weight PDCL gives to replaying round $k$. The same variables divide the memory: round $k$ receives
+$n_k=|\mathcal{B}|\big(\tfrac12\,\lambda_k/\lVert\lambda\rVert_1+\tfrac{1}{2t}\big)$ examples.
+
+We use these equations unchanged and fix three details the formulation leaves open. Following Appendix~A.10 of \citet{elenter2023primal}, $\epsilon_k$ is $1.1$ times the average training loss on round $k$ over the last 200 steps of its phase. The round that just ended has no dual variable yet and receives the mean of the others when the memory is divided. The memory never exceeds $|\mathcal{B}|=200$ examples; a round's share is drawn from a reservoir sample of that round and can later shrink but not grow. We also test farthest-first selection of the stored examples in feature space \citep{gonzalez1985clustering,sener2018active} in place of random selection, for both ER and PDCL (``+ FF'').
+
+\section{Experimental setup}
+\label{sec:setup}
+
+\paragraph{Data.}
+The public Antibody DomainBed release \citep{tagasovska2024antibody} holds $10{,}606$ antibody--antigen examples after removing incomplete and duplicate rows, in four environments of $1{,}301$, $3{,}873$, $1{,}744$ and $3{,}688$ examples. The label is the sign of a pyRosetta $\Delta\Delta G$ estimate, a computed proxy for binding. Inputs are the heavy chain, light chain and antigen sequences.
+
+\paragraph{Protocols.}
+\emph{Leave-one-round-out} is the benchmark protocol: train on three environments, test on every example of the fourth, and average over the four choices. Sequential methods see the three training rounds in index order for an equal number of steps each. The \emph{four-round stream} trains on all four environments in order and measures retention: final accuracy on the validation split of every round, and forgetting, the drop in a round's validation accuracy from its best value at the end of any phase to the end of training \citep{elenter2023primal}.
+
+\paragraph{Methods.}
+Five sequential methods share one implementation and differ in one component each: fine-tuning (no memory), ER, ER~+~FF, PDCL and PDCL~+~FF. Joint ERM trains on all rounds at once and is the reference for what the data supports when nothing has to be forgotten. To study model selection we also run five domain generalization methods from the benchmark with joint training: IRM \citep{arjovsky2019invariant}, V-REx \citep{krueger2021out}, GroupDRO \citep{sagawa2020distributionally}, CORAL \citep{sun2016deep} and SD \citep{pezeshki2021gradient}.
+
+\paragraph{Training.}
+All methods use the benchmark's SeqCNN, Adam with learning rate $5\times10^{-5}$, no weight decay, and minibatches of 32 examples per round, including each replayed round. The dual step size is $\eta_d=0.01$. These are the repository defaults. Every method is trained for $750$, $1{,}500$, $3{,}000$, $6{,}000$, $15{,}000$ and $30{,}000$ total steps; $15{,}000$ is the benchmark's length. Each configuration is run with ten seeds (five at $30{,}000$ steps and for the variants of Section~\ref{sec:tuning} other than the learning rate). A seed fixes the data split, the initialization and the sampling order, so methods are compared seed by seed.
+
+\paragraph{Model selection.}
+Each training environment is split 80/20, and a run is evaluated at 30 evenly spaced checkpoints (15 for the shortest length). The benchmark's rule, training-domain validation \citep{gulrajani2021search}, reports the checkpoint with the highest validation accuracy averaged over the training environments. We compare it with the checkpoint of lowest validation loss on the same splits, and with the last checkpoint. For sequential methods the choice is restricted to checkpoints inside the final phase, so that a reported model has trained on every round. Results are means $\pm$ standard error over seeds, and differences between methods are computed per seed before averaging.
+
+\section{Validation accuracy misses overfitting}
+\label{sec:selection}
+
+Figure~\ref{fig:trajectory} follows joint ERM through $15{,}000$ steps. Training accuracy climbs to \num{erm_train_end}\%. Accuracy on the held-out round reaches \num{erm_peak_test}\% at step \num{erm_peak_step} and then falls to \num{erm_test_end}\%. Validation accuracy on the training rounds stays between \num{erm_val_lo}\% and \num{erm_val_hi}\% from that step to the end. A rule that maximizes it is choosing on a flat curve, and on average it picks step \num{erm_step_val_15000}, well past the peak.
+
+Validation loss is not flat. It reaches its minimum of \num{erm_vloss_min} at step \num{erm_vloss_min_step} and rises to \num{erm_vloss_end} by the end, because the network grows more confident on validation examples it gets wrong. The checkpoint of lowest validation loss is at step \num{erm_step_vloss_15000} on average. The checkpoint with the best held-out accuracy, which no fair rule can see, is at step \num{erm_step_oracle_15000}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_trajectory.pdf}
+\caption{Joint ERM over $15{,}000$ training steps (mean $\pm$ SE over ten seeds, averaged over the four held-out rounds). \textbf{a}, accuracy on the training and validation splits of the training rounds and on the held-out round. \textbf{b}, loss on the same validation splits. Vertical lines mark the average step each selection rule picks.}
+\label{fig:trajectory}
+\end{figure}
+
+\paragraph{The reported number depends on training length.}
+Figure~\ref{fig:selection}a shows what this does to the benchmark number. Selected by validation accuracy, joint ERM scores \num{acc_ERM_val_3000}\% when trained for $3{,}000$ steps and \num{acc_ERM_val_15000}\% when trained for $15{,}000$. Selected by validation loss it scores \num{erm_vloss_range}\% at every length from $1{,}500$ steps up. The paired gain from switching rules is \num{d_rule_15000} points at $15{,}000$ steps and \num{d_rule_3000} at $3{,}000$.
+
+\paragraph{So do method rankings.}
+At the benchmark's $15{,}000$ steps and under its selection rule, V-REx, GroupDRO and CORAL beat ERM by \num{d_VREx_ERM_val_15000}, \num{d_GroupDRO_ERM_val_15000} and \num{d_CORAL_ERM_val_15000} points (Figure~\ref{fig:selection}b, Table~\ref{tab:joint}). These are three to four standard errors and would normally be reported as gains. They are not gains in generalization. At the four shorter lengths the same methods and SD are within \num{dg_short_val_absmax} points of ERM, and under validation-loss selection at $15{,}000$ steps they are within \num{dg_long_vloss_absmax}. Their penalties slow the decay that the selection rule fails to catch, which is the job early stopping does for free. IRM is below ERM under either rule.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_selection.pdf}
+\caption{\textbf{a}, held-out accuracy of joint ERM against training length under three checkpoint-selection rules. \textbf{b}, accuracy of five domain generalization methods minus joint ERM at $15{,}000$ steps, under the two validation rules. Means $\pm$ SE over ten seeds (five at $30{,}000$ steps).}
+\label{fig:selection}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Jointly trained methods: leave-one-round-out test accuracy (\%) at two training lengths under two selection rules, mean $\pm$ SE over ten seeds.}
+\label{tab:joint}
+\small
+\input{generated/tab_joint.tex}
+\end{table}
+
+\paragraph{Learning rate and length are one knob.}
+Lowering the learning rate from $5\times10^{-5}$ to $1.5\times10^{-5}$ at $15{,}000$ steps raises ERM by \num{low_gain_val_ERM} points under the standard rule, back to its short-run accuracy. A model trained that way would look like an improved method. Under validation-loss selection the same change is worth \num{low_gain_ERM}.
+
+In the rest of the paper every method is selected by validation loss and reported at all six lengths.
+
+\section{Does PDCL help?}
+\label{sec:pdcl}
+
+\subsection{Held-out rounds}
+
+Figure~\ref{fig:budget}a and Table~\ref{tab:seq} give held-out accuracy for joint ERM and the sequential methods. PDCL and fine-tuning are indistinguishable: their paired difference is \num{d_PDCL_RS_Finetune_vloss_1500} at $1{,}500$ steps, \num{d_PDCL_RS_Finetune_vloss_3000} at $3{,}000$, \num{d_PDCL_RS_Finetune_vloss_15000} at $15{,}000$, and never larger than \num{pdcl_ft_absmax} in magnitude (Figure~\ref{fig:budget}b).
+
+Plain replay is worse than no memory. ER is \num{er_ft_range} points below fine-tuning at the four lengths up to $6{,}000$ steps. PDCL is \num{pdcl_er_range} points above ER at those lengths, so dual weighting recovers what replay loses and nothing more. At $15{,}000$ and $30{,}000$ steps all sequential methods have overfit and the differences close.
+
+Sequential training costs \num{ft_erm_range} points against joint ERM at lengths up to $6{,}000$ steps and \num{ft_erm_long_range} at the two longest. Validation loss rescues joint ERM from long training because an early checkpoint is available. It cannot rescue a sequential model, whose early rounds were overfit before the final phase began.
+
+Farthest-first selection changes PDCL by \num{ffpdcl_range} points and ER by \num{ffer_range} across the six lengths. It does not help.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_budget.pdf}
+\caption{\textbf{a}, leave-one-round-out test accuracy against total training steps, selected by validation loss. \textbf{b}, paired differences between sequential methods. Means $\pm$ SE over ten seeds (five at $30{,}000$ steps).}
+\label{fig:budget}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Leave-one-round-out test accuracy (\%) by total training steps, selected by validation loss, mean $\pm$ SE over ten seeds (five at $30{,}000$ steps).}
+\label{tab:seq}
+\small
+\input{generated/tab_seq.tex}
+\end{table}
+
+\subsection{Why the memory does not help}
+\label{sec:why}
+
+Figure~\ref{fig:mechanism}a shows the loss on the stored examples at the end of training. ER drives it far below the loss on fresh data: \num{mem_ER_3000} at $3{,}000$ steps, where the loss on the validation splits is about $0.6$. Each earlier round holds about 100 stored examples and contributes 32 of them to every step, so a stored example is revisited every three steps while an example of the current round is seen once in 40 to 120. The network memorizes the memory, and held-out accuracy drops.
+
+PDCL holds the same loss at its constraint level: \num{mem_PDCL_RS_3000} against $\epsilon_k=$ \num{eps_PDCL_RS_3000} at $3{,}000$ steps, \num{mem_ratio_3000} times ER's value. It gets there with dual variables that average \num{dual_PDCL_RS_3000} at the end of training, against ER's fixed weight of 1. The constraint on an earlier round is close to satisfied by the model that fine-tuning produces anyway, because fine-tuning forgets only a few points on this benchmark (Section~\ref{sec:retention}). The dual variables therefore stay small, the replay term nearly vanishes from Eq.~\eqref{eq:lagrangian}, and PDCL follows the fine-tuning trajectory. This is Eq.~\eqref{eq:dual} doing what it should.
+
+At long training lengths the picture changes without changing the outcome. The network fits \num{train_PDCL_RS_15000}\% of the current round's training split at \num{val_PDCL_RS_15000}\% validation accuracy (Figure~\ref{fig:mechanism}b), so $\epsilon_k$ is small (\num{eps_PDCL_RS_15000}), the constraints bind, and the dual variables are larger (\num{dual_PDCL_RS_15000}). PDCL then keeps a memorized loss low on a few dozen memorized examples, which says little about accuracy on unseen sequences from that round.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_mechanism.pdf}
+\caption{\textbf{a}, loss on the stored examples at the end of training for ER and PDCL, with PDCL's average constraint level $\epsilon_k$. \textbf{b}, PDCL's accuracy on the training and validation splits of the last round at the end of training. Means over ten seeds and four held-out rounds.}
+\label{fig:mechanism}
+\end{figure}
+
+\subsection{Tuning}
+\label{sec:tuning}
+
+Section~\ref{sec:selection} showed that a lower learning rate undoes overfitting, so the fairest long-run comparison uses it. At $15{,}000$ steps and learning rate $1.5\times10^{-5}$ (Figure~\ref{fig:tuning}a, \num{low_n} seeds), fine-tuning gains \num{low_gain_Finetune} points and PDCL \num{low_gain_PDCL_RS}; they end at \num{low_Finetune}\% and \num{low_PDCL_RS}\%, a difference of \num{low_PDCL_RS_Finetune}. ER gains less and is again below fine-tuning (\num{low_ER_Finetune}). The ordering at this setting is the ordering of the short runs. We found the lower rate on seeds 0--4 and the differences held on seeds 5--9.
+
+No PDCL-specific setting changes this (seeds 0--4, $15{,}000$ steps, differences to the default). A dual step size ten times smaller or larger gives \num{var_PDCL_RS_dlr0p001} and \num{var_PDCL_RS_dlr0p1}. A looser constraint, $\epsilon_k$ at twice the training loss, gives \num{var_PDCL_RS_plr5em05_es2}, and a fixed $\epsilon=0.05$ gives \num{var_PDCL_RS_eps0p05}. A memory of $1{,}000$ or $3{,}000$ examples in place of 200 gives \num{var_PDCL_RS_buf1000} and \num{var_PDCL_RS_buf3000} for PDCL and \num{var_ER_buf1000} and \num{var_ER_buf3000} for ER. At $3{,}000$ steps, a lower or a higher learning rate lowers every sequential method.
+
+\subsection{Retention}
+\label{sec:retention}
+
+Held-out accuracy is not what continual learning optimizes, so Table~\ref{tab:stream} and Figure~\ref{fig:tuning}b report the four-round stream. Fine-tuning forgets \num{stream_forgetting_Finetune_4000} points at $1{,}000$ steps per round and \num{stream_forgetting_Finetune_20000} at $5{,}000$. That is the whole budget a memory method has to win back. ER wins back part of it at the short length (fine-tuning forgets \num{stream_forget_Finetune_ER_4000} points more) and none at the long one (\num{stream_forget_Finetune_ER_20000}). PDCL sits between the two at the short length and is not separable from either at the long one. Final accuracy over the four rounds is \num{stream_seq_final_range}\% for every sequential method, against \num{stream_final_val_ERM_4000}\% and \num{stream_final_val_ERM_20000}\% for joint ERM.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_tuning.pdf}
+\caption{\textbf{a}, leave-one-round-out test accuracy at $15{,}000$ steps with the default and a lower learning rate, selected by validation loss. \textbf{b}, forgetting in the four-round stream at two phase lengths. Means $\pm$ SE over seeds.}
+\label{fig:tuning}
+\end{figure}
+
+\begin{table}[t]
+\centering
+\caption{Four-round stream: validation accuracy over all four rounds at the end of training (\%) and forgetting (points), mean $\pm$ SE over ten seeds.}
+\label{tab:stream}
+\small
+\input{generated/tab_stream.tex}
+\end{table}
+
+\section{Discussion and limitations}
+
+PDCL is useful when earlier tasks are expensive to retain. Here they are cheap: a surrogate fine-tuned on the latest round keeps all but three or four points of accuracy on earlier rounds, and about one point separates it from joint training on a new round. A method that spends effort in proportion to the cost of retention spends almost none, and ends where fine-tuning ends. Replay with fixed weights does worse because it spends the effort regardless and overfits a small memory.
+
+Two consequences follow for this benchmark. When all past rounds can be stored, as they can here, joint retraining with early stopping is the method to beat, and a continual method needs a cost or privacy argument to justify itself. And comparisons selected by validation accuracy should be read with the training length in mind, since a regularizer can look like a better method only because it slows overfitting.
+
+Several things limit these conclusions. All runs use the SeqCNN backbone; a pretrained protein language model may overfit differently. We ran five of the benchmark's domain generalization methods, at default hyperparameters. We adopted validation-loss selection after seeing held-out accuracy decay, so its gain is a diagnosis on this benchmark and should be checked on others; it uses no test data. The labels are computed stability proxies. With four rounds, dual-driven memory allocation makes at most two decisions, and a campaign with many rounds and stronger shifts between them would test PDCL where it has more to do.
+
+\section{Conclusion}
+
+On Antibody DomainBed, primal-dual continual learning matches sequential fine-tuning at every training length and after tuning, and both trail joint training by about a point. Its dual variables correctly report that earlier rounds need little protection, which also explains why fixed-weight replay hurts. Getting to that answer required replacing the benchmark's validation-accuracy rule with validation loss, which removes a dependence on training length large enough to reorder methods. Code and the results of all \num{n_runs} runs are available.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}

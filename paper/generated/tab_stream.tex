@@ -1,0 +1,14 @@
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{1{,}000 steps per round} & \multicolumn{2}{c}{5{,}000 steps per round} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+Method & Final accuracy & Forgetting & Final accuracy & Forgetting \\
+\midrule
+Joint ERM & $70.1\pm0.3$ & $0.4\pm0.3$ & $69.2\pm0.3$ & $0.8\pm0.2$ \\
+Fine-tuning & $66.5\pm0.6$ & $3.8\pm0.7$ & $65.6\pm0.4$ & $3.0\pm0.4$ \\
+Replay (ER) & $66.6\pm0.6$ & $2.5\pm0.5$ & $66.4\pm0.4$ & $2.7\pm0.4$ \\
+ER + FF & $65.5\pm0.4$ & $3.1\pm0.4$ & $66.1\pm0.6$ & $2.8\pm0.6$ \\
+PDCL & $66.9\pm0.5$ & $3.2\pm0.5$ & $66.4\pm0.4$ & $2.5\pm0.6$ \\
+PDCL + FF & $66.5\pm0.4$ & $3.7\pm0.5$ & $65.4\pm0.6$ & $3.6\pm0.7$ \\
+\bottomrule
+\end{tabular}
