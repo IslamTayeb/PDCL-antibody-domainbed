@@ -1,7 +1,7 @@
 # Where does PDCL's idea help on Antibody DomainBed?
 
 Branch `pdcl-scope`. The paper's results are untouched. Everything here is new: about
-6,600 runs made with `domainbed/scripts/train_batched.py`, in twelve experiments whose
+5,500 runs made with `domainbed/scripts/train_batched.py`, in eleven experiments whose
 designs and predictions were written down before their runs existed (sections 0 to 0d,
 kept verbatim at the end of this file). Each experiment has its own report
 (`findings_e1.md` … `findings_r1.md`), tables (`results/*_tables.md`) and an analysis
@@ -81,8 +81,9 @@ Swing = highest minus lowest binder rate among the tasks. Gain over fine-tuning 
 
 **Good for: not doing harm with a small memory, without tuning.**
 
-- Default PDCL was compared with fine-tuning in 101 settings (streams, memory sizes,
-  lengths, dual step, epsilon, alpha). It is more than two standard errors below in 2,
+- Default PDCL was compared with fine-tuning in the 101 settings of E1 to F3 (streams,
+  memory sizes, lengths, dual step, epsilon, alpha); in H1, H3 and R1, run later, it is
+  also nowhere below fine-tuning beyond two standard errors. It is more than two standard errors below in 2,
   the worst by 0.57 ± 0.28 points (`skew:0.6`, long runs, five seeds), and above in 51.
   Two in 101 is what chance gives; no correction was applied.
 - With memory 200 it is 2.1 to 2.7 points above ER on the new-antigen streams `aglen` and
