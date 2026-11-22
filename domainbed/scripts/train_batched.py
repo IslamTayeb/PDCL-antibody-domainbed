@@ -284,6 +284,9 @@ class Job:
             self.kind = 'replay' if cls.REPLAY else 'finetune'
             self.dual_weights, self.adaptive = cls.DUAL_WEIGHTS, cls.ADAPTIVE
             self.farthest = cls.SELECTION == 'farthest'
+            # hparam selection='dual': store examples in proportion to their
+            # sample-level dual variables (Elenter et al., Sec. 4). Off by default.
+            self.dual_select = self.hparams.get('selection') == 'dual'
             self.domain_steps = self.hparams['domain_steps']
             if self.domain_steps <= 0:
                 self.domain_steps = max(1, self.n_steps // len(self.train_envs))
@@ -400,6 +403,41 @@ def run_group(jobs, data, device, code_hash):
         # absent or 0 = batch_size, the behaviour of every run before F2).
         replay_batch = torch.tensor([job.hparams.get('replay_batch', 0) or bs for job in jobs],
                                     device=device).clamp(max=bs).view(M, 1, 1)
+        # Sample-level dual variables (hparam selection='dual'), one per example.
+        dual_select = torch.tensor([job.dual_select for job in jobs], device=device).view(M, 1)
+        any_dual_select = bool(dual_select.any())
+        if any_dual_select:
+            ex_dual = torch.zeros(M, N, device=device)
+            eps_scale = torch.tensor([job.hparams['epsilon_scale'] for job in jobs], device=device)
+            eps_fixed = torch.tensor([job.hparams['epsilon'] for job in jobs], device=device)
+
+    def sample_dual_step(rows, ce, level, valid=None):
+        """lambda_i <- [lambda_i + eta_d (loss_i - epsilon_i)]_+ on the given examples."""
+        delta = dual_lr * (ce - level) * dual_select
+        if valid is not None:
+            delta = delta * valid
+        ex_dual.scatter_add_(1, rows, delta)
+        ex_dual.scatter_(1, rows, ex_dual.gather(1, rows).clamp(min=0))
+
+    def selection_record(j, t, pool, keep):
+        """What the dual-selected examples of task t look like against their pool."""
+        Pj = {k: v[j:j + 1] for k, v in P.items()}
+        logits = torch.cat([forward(Pj, data, c.unsqueeze(0))[1][0] for c in pool.split(256)])
+        ce = -(F.log_softmax(logits, dim=1) * data['y'][pool]).sum(1)
+        lam = ex_dual[j, pool]
+        chosen = torch.isin(pool, keep)
+        mean = lambda v, m: float(v[m].float().mean()) if bool(m.any()) else float('nan')
+        every = torch.ones_like(chosen)
+        r = {'task': t, 'pool_n': pool.numel(), 'kept_n': keep.numel(),
+             'dual_nonzero': mean(lam > 0, every), 'dual_mean': mean(lam, every),
+             'dual_max': float(lam.max()), 'dual_std': float(lam.std()),
+             'kept_dual_nonzero': mean(lam > 0, chosen)}
+        for name, m in (('pool', every), ('kept', chosen)):
+            r[f'{name}_loss'] = mean(ce, m)
+            r[f'{name}_binder'] = mean(label[pool], m)
+            r[f'{name}_wrong'] = mean(logits.argmax(1) != label[pool], m)
+        with open(REPO_ROOT / jobs[j].out / 'selection.jsonl', 'a') as f:
+            f.write(json.dumps(r, sort_keys=True) + '\n')
     t = 0                                              # current phase
 
     def select(j, rows, n):
@@ -408,6 +446,12 @@ def run_group(jobs, data, device, code_hash):
         n = min(n, size)
         if n == 0:
             return rows[:0]
+        if jobs[j].dual_select and n < size:
+            # Fill Buffer of the paper: draw without replacement with probability
+            # proportional to the sample duals (zero duals only once the rest ran out).
+            w = ex_dual[j, rows].double().cpu().numpy() + 1e-8
+            return rows[torch.as_tensor(np_rng[j].choice(size, n, replace=False, p=w / w.sum()),
+                                        device=device)]
         if not jobs[j].farthest or n == size:
             return rows[torch.as_tensor(np_rng[j].permutation(size)[:n], device=device)]
         feats = features_of(P, j, data, rows)
@@ -442,6 +486,8 @@ def run_group(jobs, data, device, code_hash):
             keep = select(j, pool, job.hparams['buffer_size'] - used)
             mem_idx[j, t, :keep.numel()] = keep
             mem_n[j, t] = keep.numel()
+            if job.dual_select:
+                selection_record(j, t, pool, keep)
             pool_n[j], seen[j] = 0, 0
 
     # ---- logging ---------------------------------------------------------
@@ -510,6 +556,7 @@ def run_group(jobs, data, device, code_hash):
     for job in jobs:
         (REPO_ROOT / job.out).mkdir(parents=True, exist_ok=True)
         (REPO_ROOT / job.out / 'results.jsonl').unlink(missing_ok=True)
+        (REPO_ROOT / job.out / 'selection.jsonl').unlink(missing_ok=True)
 
     def checkpoint(step):
         nonlocal n_acc, t_acc
@@ -640,6 +687,18 @@ def run_group(jobs, data, device, code_hash):
                     dual[:, :n_rep] = torch.where(use_dual & (has > 0), stepped, dual[:, :n_rep])
                     for k in range(n_rep):
                         sums[f'replay_loss_{k}'] += rep[:, k] * has[:, k]
+                if any_dual_select and kind == 'replay':
+                    ce = ce.detach()
+                    if not last:
+                        # Current task: its constraint level is not fixed until the
+                        # phase ends, so use the level it would get now.
+                        recent = ring[:, :min(ring_count, RECENT)].mean(1)
+                        level = torch.where(eps_scale > 0, eps_scale * recent, eps_fixed)
+                        sample_dual_step(cur_rows, ce[:, :bs], level.view(M, 1))
+                    if n_rep:
+                        sample_dual_step(rows[:, bs:], ce[:, bs:],
+                                         eps[:, :n_rep].repeat_interleave(bs, dim=1),
+                                         valid.expand(M, n_rep, bs).flatten(1))
                 if (step + 1) % domain_steps == 0 and not last:
                     if kind == 'replay':
                         end_of_domain(t)
