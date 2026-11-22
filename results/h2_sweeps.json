@@ -1,0 +1,22 @@
+[
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.7", "output_root": "outputs/h2/skew0.7", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.7", "output_root": "outputs/h2/skew0.7", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.8", "output_root": "outputs/h2/skew0.8", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.8", "output_root": "outputs/h2/skew0.8", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.9", "output_root": "outputs/h2/skew0.9", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.9", "output_root": "outputs/h2/skew0.9", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.95", "output_root": "outputs/h2/skew0.95", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "skew:0.95", "output_root": "outputs/h2/skew0.95", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "drift:0.4", "output_root": "outputs/h2/drift0.4", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "drift:0.4", "output_root": "outputs/h2/drift0.4", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "drift:0.6", "output_root": "outputs/h2/drift0.6", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "drift:0.6", "output_root": "outputs/h2/drift0.6", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "drift:0.8", "output_root": "outputs/h2/drift0.8", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "drift:0.8", "output_root": "outputs/h2/drift0.8", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "agrate", "output_root": "outputs/h2/agrate", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "agrate", "output_root": "outputs/h2/agrate", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "rounds", "output_root": "outputs/h2/rounds", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "rounds", "output_root": "outputs/h2/rounds", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "aglen", "output_root": "outputs/h2/aglen", "algorithms": ["Finetune", "ER", "PDCL_RS"]},
+ {"seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 4000, "checkpoint_freq": 250, "stream": "aglen", "output_root": "outputs/h2/aglen", "algorithms": ["Finetune"], "tag": "bal", "hparams": {"balanced_loss": true}}
+]

@@ -417,6 +417,11 @@ def run_group(jobs, data, device, code_hash):
                 src_idx[j, d, :len(keys_out)] = torch.as_tensor(keys_out, device=device) + int(offsets[e])
                 src_n[j, d] = len(keys_out)
         src_gen = torch.Generator(device=device).manual_seed((group_seed + 1) % (2 ** 31))
+        # Class-balanced loss on the current task's batch (hparam balanced_loss, off by
+        # default): each class present gets half of the weight; no memory involved.
+        balanced = torch.tensor([bool(job.hparams.get('balanced_loss', False)) for job in jobs],
+                                device=device)
+        any_balanced = bool(balanced.any())
     t = 0                                              # current phase
 
     def select(j, rows, n):
@@ -656,6 +661,12 @@ def run_group(jobs, data, device, code_hash):
                 rows = torch.cat([cur_rows, rep_rows.flatten(1)], dim=1)
             ce = -(F.log_softmax(forward(P, data, rows)[1], dim=2) * y1h[rows]).sum(2)
             cur = ce[:, :bs].mean(1)
+            if any_balanced:
+                pos = label[cur_rows].float()                            # [M, bs]
+                n1 = pos.sum(1, keepdim=True)
+                w = 0.5 * (pos / n1.clamp(min=1) + (1 - pos) / (bs - n1).clamp(min=1))
+                both = ((n1 > 0) & (n1 < bs)).squeeze(1)                 # else: plain mean
+                cur = torch.where(balanced & both, (w * ce[:, :bs]).sum(1), cur)
             loss = cur
             if n_rep:
                 has = (mem_n[:, :n_rep] > 0).float()
