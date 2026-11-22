@@ -382,7 +382,11 @@ def run_group(jobs, data, device, code_hash):
     # ---- state of the sequential methods ---------------------------------
     sequential = kind != 'erm'
     if sequential:
-        cap = max(bs, max(job.hparams['buffer_size'] for job in jobs))
+        # hparam 'full_memory' (default off): the memory of an earlier task is its
+        # whole training split, so buffer_size and pool_size play no role.
+        full = [bool(job.hparams.get('full_memory', False)) for job in jobs]
+        cap = max(bs, max(job.hparams['buffer_size'] for job in jobs),
+                  int(in_len.max()) if any(full) else 0)
         dual = torch.zeros(M, D, device=device)
         eps = torch.zeros(M, D, device=device)
         mem_idx = torch.zeros(M, D, cap, dtype=torch.long, device=device)
@@ -407,6 +411,7 @@ def run_group(jobs, data, device, code_hash):
         # src_idx holds the examples measured on; 'memory' runs leave it empty.
         source = [job.hparams.get('dual_source', 'memory') for job in jobs]
         assert set(source) <= {'memory', 'val', 'split'}, source
+        assert not any(f and s == 'split' for f, s in zip(full, source))
         honest = torch.tensor([j for j, s in enumerate(source) if s != 'memory'],
                               dtype=torch.long, device=device)
         src_idx = torch.zeros(M, D, max(cap, max(sizes)), dtype=torch.long, device=device)
@@ -458,6 +463,10 @@ def run_group(jobs, data, device, code_hash):
             # replay and one to measure the constraints on.
             stores = [(mem_idx, mem_n, size)] if source[j] != 'split' else \
                 [(mem_idx, mem_n, size // 2), (src_idx, src_n, size - size // 2)]
+            if full[j]:
+                stores, n_in = [], int(in_len[j, t])
+                mem_idx[j, t, :n_in] = in_tab[j, t, :n_in]
+                mem_n[j, t] = n_in
             for idx, count, size in stores:
                 share = partition_sizes(duals, job.adaptive, job.hparams['alpha'], size)
                 used = 0
@@ -567,6 +576,12 @@ def run_group(jobs, data, device, code_hash):
                 return (total / count).cpu().numpy()
             state['mem_loss'] = stored_loss(mem_idx, mem_n)
             state['held_loss'] = stored_loss(src_idx, src_n)
+            # Distinct examples among the stored ones (the pool samples the
+            # phase's minibatch stream, so an example can be stored twice).
+            ranked = torch.where(torch.arange(cap, device=device) < mem_n[:, :, None],
+                                 mem_idx, -1).sort(2).values
+            state['buf_unique'] = ((ranked[:, :, 1:] != ranked[:, :, :-1]).sum(2)
+                                   + (ranked[:, :, 0] >= 0)).cpu().numpy()
             stored = (torch.arange(cap, device=device) < mem_n[:, :, None]).float()
             mem_acc = ((correct.gather(1, mem_idx.flatten(1)).view(M, D, cap) * stored).sum(2)
                        / stored.sum(2)).cpu().numpy()                # nan for an empty memory
@@ -581,6 +596,7 @@ def run_group(jobs, data, device, code_hash):
                     r[f'dual_{k}'] = float(state['dual'][j, k])
                     r[f'eps_{k}'] = float(state['eps'][j, k])
                     r[f'buf_{k}'] = float(state['buf'][j, k])
+                    r[f'buf_unique_{k}'] = float(state['buf_unique'][j, k])
                     # Loss on the examples the run replays, and on the task's validation set.
                     r[f'mem_loss_{k}'] = float(state['mem_loss'][j, k])
                     r[f'val_loss_{k}'] = float(loss[j, 2 * job.train_envs[k] + 1])
