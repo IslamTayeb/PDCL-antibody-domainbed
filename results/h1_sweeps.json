@@ -1,0 +1,18 @@
+[
+ {"algorithms": ["ERM", "Finetune", "PDCL_RS"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "aglen", "output_root": "outputs/h1/aglen"},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "aglen", "output_root": "outputs/h1/aglen", "tag": "w0.03", "hparams": {"replay_weight": 0.03}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "aglen", "output_root": "outputs/h1/aglen", "tag": "w0.3", "hparams": {"replay_weight": 0.3}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "aglen", "output_root": "outputs/h1/aglen", "tag": "w1", "hparams": {"replay_weight": 1}},
+ {"algorithms": ["ERM", "Finetune", "PDCL_RS"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds", "output_root": "outputs/h1/rounds"},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds", "output_root": "outputs/h1/rounds", "tag": "w0.03", "hparams": {"replay_weight": 0.03}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds", "output_root": "outputs/h1/rounds", "tag": "w0.3", "hparams": {"replay_weight": 0.3}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds", "output_root": "outputs/h1/rounds", "tag": "w1", "hparams": {"replay_weight": 1}},
+ {"algorithms": ["ERM", "Finetune", "PDCL_RS"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds:3210", "output_root": "outputs/h1/rounds3210"},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds:3210", "output_root": "outputs/h1/rounds3210", "tag": "w0.03", "hparams": {"replay_weight": 0.03}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds:3210", "output_root": "outputs/h1/rounds3210", "tag": "w0.3", "hparams": {"replay_weight": 0.3}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "rounds:3210", "output_root": "outputs/h1/rounds3210", "tag": "w1", "hparams": {"replay_weight": 1}},
+ {"algorithms": ["ERM", "Finetune", "PDCL_RS"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "target", "output_root": "outputs/h1/target"},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "target", "output_root": "outputs/h1/target", "tag": "w0.03", "hparams": {"replay_weight": 0.03}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "target", "output_root": "outputs/h1/target", "tag": "w0.3", "hparams": {"replay_weight": 0.3}},
+ {"algorithms": ["ER"], "seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], "envs": [-1], "steps": 20000, "checkpoint_freq": 500, "stream": "target", "output_root": "outputs/h1/target", "tag": "w1", "hparams": {"replay_weight": 1}}
+]
