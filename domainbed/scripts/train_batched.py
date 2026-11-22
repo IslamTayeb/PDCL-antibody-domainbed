@@ -400,6 +400,23 @@ def run_group(jobs, data, device, code_hash):
         # absent or 0 = batch_size, the behaviour of every run before F2).
         replay_batch = torch.tensor([job.hparams.get('replay_batch', 0) or bs for job in jobs],
                                     device=device).clamp(max=bs).view(M, 1, 1)
+        # Where a run measures the constraints of earlier tasks (hparam 'dual_source'):
+        #   memory  on the batch it replays (default; the published method)
+        #   val     on the task's validation examples (an oracle)
+        #   split   on half of the task's stored examples, which is never replayed
+        # src_idx holds the examples measured on; 'memory' runs leave it empty.
+        source = [job.hparams.get('dual_source', 'memory') for job in jobs]
+        assert set(source) <= {'memory', 'val', 'split'}, source
+        honest = torch.tensor([j for j, s in enumerate(source) if s != 'memory'],
+                              dtype=torch.long, device=device)
+        src_idx = torch.zeros(M, D, max(cap, max(sizes)), dtype=torch.long, device=device)
+        src_n = torch.zeros(M, D, dtype=torch.long, device=device)
+        for j, job in enumerate(jobs):
+            for d, e in enumerate(job.train_envs if source[j] == 'val' else []):
+                keys_out = split(job.seed, e)[1]
+                src_idx[j, d, :len(keys_out)] = torch.as_tensor(keys_out, device=device) + int(offsets[e])
+                src_n[j, d] = len(keys_out)
+        src_gen = torch.Generator(device=device).manual_seed((group_seed + 1) % (2 ** 31))
     t = 0                                              # current phase
 
     def select(j, rows, n):
@@ -419,6 +436,12 @@ def run_group(jobs, data, device, code_hash):
             min_dist = torch.minimum(min_dist, 1 - feats @ feats[chosen[-1]])
         return rows[torch.tensor(chosen, device=device)]
 
+    def loss_on(j, rows):
+        """Mean loss of run j on the given examples."""
+        Pj = {k: v[j:j + 1] for k, v in P.items()}
+        logits = torch.cat([forward(Pj, data, c.unsqueeze(0))[1][0] for c in rows.split(256)])
+        return float(-(F.log_softmax(logits, dim=1) * data['y'][rows]).sum(1).mean())
+
     def end_of_domain(t):
         """Phase t is over: set its constraint level and refill each memory."""
         recent = ring[:, :min(ring_count, RECENT)].double().mean(1).cpu()
@@ -429,20 +452,29 @@ def run_group(jobs, data, device, code_hash):
             duals = duals_cpu[j, :t + 1].clone()
             if t > 0:
                 duals[t] = duals[:t].mean()
-            share = partition_sizes(duals, job.adaptive, job.hparams['alpha'],
-                                    job.hparams['buffer_size'])
-            used = 0
-            for k in range(t):
-                n_k = int(mem_n[j, k])
-                keep = select(j, mem_idx[j, k, :n_k], min(share[k], n_k))
-                mem_idx[j, k, :keep.numel()] = keep
-                mem_n[j, k] = keep.numel()
-                used += keep.numel()
             pool = torch.as_tensor(pools[j][:pool_n[j]], device=device)
-            keep = select(j, pool, job.hparams['buffer_size'] - used)
-            mem_idx[j, t, :keep.numel()] = keep
-            mem_n[j, t] = keep.numel()
+            size = job.hparams['buffer_size']
+            # 'split' keeps two disjoint memories of half the size: one to
+            # replay and one to measure the constraints on.
+            stores = [(mem_idx, mem_n, size)] if source[j] != 'split' else \
+                [(mem_idx, mem_n, size // 2), (src_idx, src_n, size - size // 2)]
+            for idx, count, size in stores:
+                share = partition_sizes(duals, job.adaptive, job.hparams['alpha'], size)
+                used = 0
+                for k in range(t):
+                    n_k = int(count[j, k])
+                    keep = select(j, idx[j, k, :n_k], min(share[k], n_k))
+                    idx[j, k, :keep.numel()] = keep
+                    count[j, k] = keep.numel()
+                    used += keep.numel()
+                keep = select(j, pool, size - used)
+                idx[j, t, :keep.numel()] = keep
+                count[j, t] = keep.numel()
+                pool = pool[~torch.isin(pool, keep)]
             pool_n[j], seen[j] = 0, 0
+            if source[j] != 'memory' and scale > 0 and int(src_n[j, t]) > 0:
+                # The constraint level is set where the constraint is measured.
+                eps[j, t] = scale * loss_on(j, src_idx[j, t, :int(src_n[j, t])])
 
     # ---- logging ---------------------------------------------------------
     acc_keys = ['loss'] + (['current_loss'] + [f'replay_loss_{k}' for k in range(D - 1)]
@@ -528,11 +560,16 @@ def run_group(jobs, data, device, code_hash):
         if sequential:
             state = {'dual': dual.cpu().numpy(), 'eps': eps.cpu().numpy(),
                      'buf': mem_n.cpu().numpy()}
-            # Loss and accuracy on all stored examples of each task (not a sampled batch).
+            def stored_loss(idx, count):
+                """Mean loss on each run's stored examples of each task (NaN if none)."""
+                mask = torch.arange(idx.size(2), device=device) < count[:, :, None]
+                total = (ce.gather(1, idx.flatten(1)).view(idx.shape) * mask).sum(2)
+                return (total / count).cpu().numpy()
+            state['mem_loss'] = stored_loss(mem_idx, mem_n)
+            state['held_loss'] = stored_loss(src_idx, src_n)
             stored = (torch.arange(cap, device=device) < mem_n[:, :, None]).float()
-            at_mem = lambda v: ((v.gather(1, mem_idx.flatten(1)).view(M, D, cap) * stored).sum(2)
-                                / stored.sum(2)).cpu().numpy()       # nan for an empty memory
-            mem_loss, mem_acc = at_mem(ce), at_mem(correct)
+            mem_acc = ((correct.gather(1, mem_idx.flatten(1)).view(M, D, cap) * stored).sum(2)
+                       / stored.sum(2)).cpu().numpy()                # nan for an empty memory
         mem_gb = torch.cuda.max_memory_allocated() / 2 ** 30
         for j, job in enumerate(jobs):
             r = {'step': step, 'epoch': step / steps_per_epoch, 'step_time': step_time,
@@ -544,7 +581,11 @@ def run_group(jobs, data, device, code_hash):
                     r[f'dual_{k}'] = float(state['dual'][j, k])
                     r[f'eps_{k}'] = float(state['eps'][j, k])
                     r[f'buf_{k}'] = float(state['buf'][j, k])
-                    r[f'mem_loss_{k}'] = float(mem_loss[j, k])
+                    # Loss on the examples the run replays, and on the task's validation set.
+                    r[f'mem_loss_{k}'] = float(state['mem_loss'][j, k])
+                    r[f'val_loss_{k}'] = float(loss[j, 2 * job.train_envs[k] + 1])
+                    if source[j] == 'split':
+                        r[f'held_loss_{k}'] = float(state['held_loss'][j, k])
                     r[f'mem_acc_{k}'] = float(mem_acc[j, k])
             for e in range(T):
                 r[f'env{e}_in_acc'] = float(acc[j, 2 * e])
@@ -635,9 +676,21 @@ def run_group(jobs, data, device, code_hash):
                 ring_count += 1
                 if n_rep:
                     rep = rep.detach()
+                    measured, has_src = rep, has
+                    if honest.numel():
+                        # These runs measure loss_k on a batch of examples they do not replay.
+                        n_src = src_n[honest, :n_rep]
+                        pick = torch.rand(honest.numel(), n_rep, bs, device=device, generator=src_gen)
+                        pick = (pick * n_src[:, :, None]).long().clamp(max=src_idx.size(2) - 1)
+                        src_rows = src_idx[honest, :n_rep].gather(2, pick).flatten(1)
+                        logits = forward({k: v[honest] for k, v in P.items()}, data, src_rows)[1]
+                        src_ce = -(F.log_softmax(logits, dim=2) * y1h[src_rows]).sum(2)
+                        measured, has_src = rep.clone(), has.clone()
+                        measured[honest] = src_ce.view(-1, n_rep, bs).mean(2)
+                        has_src[honest] = (n_src > 0).float()
                     # Dual ascent: lambda_k <- [lambda_k + eta_d (loss_k - epsilon_k)]_+
-                    stepped = torch.clamp(dual[:, :n_rep] + dual_lr * (rep - eps[:, :n_rep]), min=0)
-                    dual[:, :n_rep] = torch.where(use_dual & (has > 0), stepped, dual[:, :n_rep])
+                    stepped = torch.clamp(dual[:, :n_rep] + dual_lr * (measured - eps[:, :n_rep]), min=0)
+                    dual[:, :n_rep] = torch.where(use_dual & (has_src > 0), stepped, dual[:, :n_rep])
                     for k in range(n_rep):
                         sums[f'replay_loss_{k}'] += rep[:, k] * has[:, k]
                 if (step + 1) % domain_steps == 0 and not last:
