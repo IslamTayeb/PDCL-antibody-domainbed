@@ -475,6 +475,10 @@ def run_group(jobs, data, device, code_hash):
             if source[j] != 'memory' and scale > 0 and int(src_n[j, t]) > 0:
                 # The constraint level is set where the constraint is measured.
                 eps[j, t] = scale * loss_on(j, src_idx[j, t, :int(src_n[j, t])])
+            # Task t is an earlier task from the next step on; its dual variable
+            # starts at hparam 'dual_init' (absent or 0 = the published method).
+            if job.hparams.get('dual_init', 0):
+                dual[j, t] = float(job.hparams['dual_init'])
 
     # ---- logging ---------------------------------------------------------
     acc_keys = ['loss'] + (['current_loss'] + [f'replay_loss_{k}' for k in range(D - 1)]
