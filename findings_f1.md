@@ -1,0 +1,552 @@
+# F1. Honest constraints: does measuring PDCL's constraints on unseen data fix its under-reaction?
+
+Branch `claude/pdcl-f1-honest-constraints-2145b2`, cut from 7a3f1b2. Design: `findings.md` section 0b,
+F1, followed without change. 900 runs (all finished), made with `train_batched.py`.
+
+- Trainer: new hparam `dual_source` in `domainbed/scripts/train_batched.py`, values `memory` (default,
+  the published method), `val` (oracle) and `split`. Default runs are bit-identical to the trainer
+  before the change (short PDCL_RS, ER and fine-tuning sweep written to the same paths: 810 logged
+  values, largest difference 0). Every sequential run now also logs, per checkpoint and earlier task,
+  `mem_loss_k` (loss on the stored examples it replays) and `val_loss_k`; split runs log `held_loss_k`.
+- Spec: `results/f1_sweeps.json`. Runs: `outputs/f1/<stream>/<method>/env-1_seed<s>`. The sweep was run
+  as disjoint per-stream parts of that spec on GPUs 5 and 0 (one process per GPU), not as one process.
+- Analysis: `python -m domainbed.scripts.f1_analysis` reads the raw runs and writes
+  `results/f1_runs.csv`, `results/f1_curves.csv`, `results/f1_tables.md` (copied in the appendix) and
+  `paper/figures/fig_f1_{accuracy,differences,duals,gap}.{pdf,png}`.
+- Six streams, memory 200 and 1,000, 4,000 steps (1,000 per task), seeds 0–9. Numbers are mean ±
+  standard error over ten seeds; differences are paired by seed; **bold** = larger than two standard
+  errors, anything else is a null. "Best fixed weight" is the best of ER with w = 0.03, 0.3, 1, 3 on
+  that stream and memory, picked on the same seeds, so it is biased upward.
+
+How the variants work. Default PDCL updates the dual variable of an earlier task from the loss on the
+batch it replays. *Oracle* updates it from a batch of 32 of that task's validation examples and sets
+the constraint level to 1.1 x the task's validation loss when its phase ends. *Split* keeps two
+disjoint memories of half the size each; one is replayed, the other is never trained on after the
+task's phase and gives the dual update (batch of 32) and the constraint level (1.1 x its loss when the
+phase ends). In both, the replayed examples and the objective are unchanged; only the measurement moves.
+
+## Answer in short
+
+**Does either variant close the gap to tuned replay without losing PDCL's safety on `aglen`?**
+The oracle does; the split variant, the only one a deployed method could use, does not.
+
+1. **Oracle: yes.** At memory 200 it gains +1.27 ± 0.44 on `skew:0.9` and +2.35 ± 0.42 on `skew:0.95`
+   over default PDCL (+1.04 ± 0.53 on `skew:0.8`, just under two standard errors), which is 76% to
+   140% of default PDCL's shortfall against the best fixed weight. In none of the 12 stream-by-memory
+   cells is the oracle more than two standard errors below the best fixed weight (worst: `rounds`,
+   memory 200, −1.14 ± 0.58), and it keeps the safety: on `aglen` it is +0.37 ± 0.31 against
+   fine-tuning at memory 200, where ER w=1 is −2.47 ± 0.47. So the hypothesis survives its
+   pre-registered test: PDCL under-reacts because it measures its constraints on examples it trains on.
+2. **Split: no.** It beats default PDCL in one cell of twelve (`skew:0.9`, memory 200, +1.30 ± 0.40),
+   is worse than default PDCL at memory 1,000 on `skew:0.9` (−1.45 ± 0.46) and `skew:0.95`
+   (−2.01 ± 0.30), and loses the safety on `aglen` at memory 200 (−1.98 ± 0.56 against fine-tuning).
+   It is more than two standard errors below the best fixed weight in 11 of 12 cells.
+3. **The shortfall of default PDCL is a small-memory problem.** At memory 1,000 default PDCL already
+   matches the best fixed weight on `skew:0.9` and `skew:0.95` (−0.35 ± 0.47, +0.35 ± 0.32), and there
+   the oracle adds nothing (+0.50 ± 0.31, −0.26 ± 0.21).
+4. The oracle uses validation data during training. It is an upper bound, not a method.
+
+## 1. Final accuracy
+
+Memory 200 (%):
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning | 66.38 ± 0.34 | 64.27 ± 0.50 | 57.42 ± 0.51 | 52.57 ± 0.32 | 68.00 ± 0.44 | 66.54 ± 0.56 |
+| ER w=0.03 | 67.16 ± 0.37 | 64.81 ± 0.42 | 61.20 ± 0.53 | 57.09 ± 0.63 | 67.22 ± 0.38 | 67.41 ± 0.46 |
+| ER w=0.3 | 66.79 ± 0.35 | 65.08 ± 0.35 | 63.26 ± 0.48 | 61.50 ± 0.55 | 65.60 ± 0.39 | 66.91 ± 0.45 |
+| ER w=1 | 66.17 ± 0.38 | 65.47 ± 0.23 | 62.84 ± 0.39 | 61.62 ± 0.57 | 65.53 ± 0.35 | 66.60 ± 0.48 |
+| ER w=3 | 65.84 ± 0.36 | 65.48 ± 0.32 | 63.07 ± 0.41 | 61.57 ± 0.52 | 65.36 ± 0.41 | 66.13 ± 0.56 |
+| PDCL | 66.67 ± 0.28 | 64.26 ± 0.58 | 61.60 ± 0.55 | 59.94 ± 0.42 | 68.13 ± 0.37 | 66.87 ± 0.50 |
+| PDCL oracle | 66.40 ± 0.38 | 65.30 ± 0.28 | 62.87 ± 0.31 | 62.29 ± 0.55 | 68.37 ± 0.38 | 66.28 ± 0.75 |
+| PDCL split | 66.06 ± 0.18 | 64.57 ± 0.38 | 62.90 ± 0.41 | 60.10 ± 0.43 | 66.02 ± 0.62 | 66.36 ± 0.33 |
+
+Memory 1,000 (%):
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning | 66.38 ± 0.34 | 64.27 ± 0.50 | 57.42 ± 0.51 | 52.57 ± 0.32 | 68.00 ± 0.44 | 66.54 ± 0.56 |
+| ER w=0.03 | 67.16 ± 0.41 | 65.37 ± 0.37 | 61.49 ± 0.59 | 57.34 ± 0.57 | 68.74 ± 0.44 | 67.70 ± 0.55 |
+| ER w=0.3 | 68.03 ± 0.37 | 67.44 ± 0.25 | 67.09 ± 0.38 | 65.92 ± 0.35 | 67.65 ± 0.38 | 68.54 ± 0.37 |
+| ER w=1 | 67.62 ± 0.31 | 66.70 ± 0.31 | 66.74 ± 0.34 | 66.19 ± 0.44 | 67.35 ± 0.34 | 68.30 ± 0.39 |
+| ER w=3 | 67.17 ± 0.25 | 66.52 ± 0.28 | 66.93 ± 0.26 | 66.34 ± 0.37 | 66.22 ± 0.45 | 68.23 ± 0.37 |
+| PDCL | 67.54 ± 0.44 | 65.84 ± 0.44 | 66.74 ± 0.46 | 66.70 ± 0.31 | 68.37 ± 0.38 | 67.51 ± 0.43 |
+| PDCL oracle | 67.69 ± 0.18 | 67.02 ± 0.31 | 67.23 ± 0.24 | 66.44 ± 0.27 | 68.36 ± 0.43 | 67.84 ± 0.55 |
+| PDCL split | 66.78 ± 0.21 | 66.09 ± 0.40 | 65.29 ± 0.21 | 64.69 ± 0.36 | 67.85 ± 0.48 | 67.23 ± 0.55 |
+
+Figure: `paper/figures/fig_f1_accuracy`. The default-PDCL numbers repeat the first round (E2:
+`skew:0.95` 59.78, here 59.94; fine-tuning is identical).
+
+## 2. Paired differences
+
+Variant minus default PDCL:
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Oracle, memory 200 | -0.26 ± 0.52 | +1.04 ± 0.53 | **+1.27 ± 0.44** | **+2.35 ± 0.42** | +0.24 ± 0.24 | -0.59 ± 0.55 |
+| Split, memory 200 | **-0.60 ± 0.23** | +0.31 ± 0.53 | **+1.30 ± 0.40** | +0.16 ± 0.33 | **-2.11 ± 0.46** | -0.52 ± 0.35 |
+| Oracle, memory 1,000 | +0.15 ± 0.40 | **+1.18 ± 0.45** | +0.50 ± 0.31 | -0.26 ± 0.21 | -0.01 ± 0.28 | +0.34 ± 0.44 |
+| Split, memory 1,000 | -0.76 ± 0.48 | +0.25 ± 0.49 | **-1.45 ± 0.46** | **-2.01 ± 0.30** | -0.51 ± 0.32 | -0.28 ± 0.43 |
+
+Minus the best fixed weight of the stream and memory:
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| best w, memory 200 | 0.03 | 3 | 0.3 | 1 | 0.03 | 0.03 |
+| PDCL, memory 200 | **-0.49 ± 0.18** | **-1.22 ± 0.50** | **-1.66 ± 0.51** | **-1.67 ± 0.35** | **+0.91 ± 0.28** | -0.54 ± 0.36 |
+| Oracle, memory 200 | -0.76 ± 0.54 | -0.18 ± 0.19 | -0.39 ± 0.37 | **+0.67 ± 0.32** | **+1.15 ± 0.19** | -1.14 ± 0.58 |
+| Split, memory 200 | **-1.10 ± 0.30** | **-0.91 ± 0.38** | -0.36 ± 0.33 | **-1.52 ± 0.38** | **-1.20 ± 0.44** | **-1.06 ± 0.49** |
+| best w, memory 1,000 | 0.3 | 0.3 | 0.3 | 3 | 0.03 | 0.3 |
+| PDCL, memory 1,000 | -0.49 ± 0.42 | **-1.60 ± 0.33** | -0.35 ± 0.47 | +0.35 ± 0.32 | -0.38 ± 0.32 | **-1.03 ± 0.38** |
+| Oracle, memory 1,000 | -0.34 ± 0.26 | -0.41 ± 0.36 | +0.14 ± 0.31 | +0.10 ± 0.30 | -0.39 ± 0.33 | -0.70 ± 0.40 |
+| Split, memory 1,000 | **-1.25 ± 0.26** | **-1.35 ± 0.38** | **-1.80 ± 0.34** | **-1.65 ± 0.39** | **-0.89 ± 0.26** | **-1.31 ± 0.46** |
+
+Minus fine-tuning:
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | +0.28 ± 0.20 | -0.01 ± 0.45 | **+4.18 ± 0.31** | **+7.37 ± 0.39** | +0.13 ± 0.18 | +0.33 ± 0.28 |
+| Oracle, memory 200 | +0.02 ± 0.59 | +1.03 ± 0.54 | **+5.45 ± 0.47** | **+9.72 ± 0.61** | +0.37 ± 0.31 | -0.27 ± 0.57 |
+| Split, memory 200 | -0.32 ± 0.27 | +0.30 ± 0.53 | **+5.48 ± 0.40** | **+7.53 ± 0.34** | **-1.98 ± 0.56** | -0.19 ± 0.49 |
+| ER w=1, memory 200 | -0.21 ± 0.61 | **+1.19 ± 0.54** | **+5.42 ± 0.48** | **+9.05 ± 0.50** | **-2.47 ± 0.47** | +0.06 ± 0.47 |
+| PDCL, memory 1,000 | **+1.16 ± 0.30** | **+1.57 ± 0.49** | **+9.32 ± 0.58** | **+14.12 ± 0.39** | **+0.37 ± 0.15** | **+0.96 ± 0.24** |
+| Oracle, memory 1,000 | **+1.31 ± 0.35** | **+2.75 ± 0.47** | **+9.82 ± 0.40** | **+13.87 ± 0.36** | +0.36 ± 0.29 | **+1.30 ± 0.48** |
+| Split, memory 1,000 | +0.40 ± 0.38 | **+1.82 ± 0.47** | **+7.87 ± 0.49** | **+12.11 ± 0.44** | -0.15 ± 0.37 | +0.69 ± 0.47 |
+| ER w=1, memory 1,000 | **+1.24 ± 0.38** | **+2.42 ± 0.41** | **+9.32 ± 0.47** | **+13.62 ± 0.56** | -0.65 ± 0.46 | **+1.76 ± 0.44** |
+
+Figure: `paper/figures/fig_f1_differences` (bars are two standard errors).
+
+## 3. The pre-registered predictions
+
+**(a) Variant minus default PDCL on the skewed streams.**
+*Oracle positive on `skew:0.8`, `0.9`, `0.95` and closing at least half of the gap to the best fixed
+weight: held in part.* Six cells (three streams, two memory sizes):
+
+| Stream | memory | best fixed − PDCL | oracle − PDCL | share of gap closed | outcome |
+|---|---|---|---|---|---|
+| skew:0.8 | 200 | **+1.22 ± 0.50** | +1.04 ± 0.53 | 85% | null (1.96 SE) |
+| skew:0.9 | 200 | **+1.66 ± 0.51** | **+1.27 ± 0.44** | 76% | held |
+| skew:0.95 | 200 | **+1.67 ± 0.35** | **+2.35 ± 0.42** | 140% | held |
+| skew:0.8 | 1,000 | **+1.60 ± 0.33** | **+1.18 ± 0.45** | 74% | held |
+| skew:0.9 | 1,000 | +0.35 ± 0.47 | +0.50 ± 0.31 | no gap to close | null |
+| skew:0.95 | 1,000 | -0.35 ± 0.32 | -0.26 ± 0.21 | no gap to close | null |
+
+Held in three cells; in the other three the difference is a null, in two of them because default
+PDCL has no shortfall there. Wherever default PDCL is behind the best fixed weight, the oracle closes
+at least 74% of it. The falsification condition ("the oracle does not beat default PDCL on the skewed
+streams") is not met at memory 200. On `skew:0.7` (not part of the prediction) the oracle is a null.
+*Exploratory:* pooled over `skew:0.8`–`0.95`, oracle − PDCL is +1.55 ± 0.17 at memory 200 (best fixed
+− PDCL: +1.52 ± 0.21) and +0.47 ± 0.23 at memory 1,000 (+0.53 ± 0.19).
+
+*Split positive but smaller: failed.* Split − default PDCL is positive in one of the six cells
+(`skew:0.9`, memory 200: +1.30 ± 0.40), a null in three and negative in two (memory 1,000:
+−1.45 ± 0.46, −2.01 ± 0.30). "Smaller than the oracle" holds: oracle − split is positive by more than
+two standard errors in four of the six cells and never negative.
+
+**(b) Safety: neither variant more than two standard errors below fine-tuning on `aglen` and `rounds`.**
+*Held for the oracle, failed for split.*
+
+| Stream | memory | PDCL − FT | oracle − FT | split − FT | ER w=1 − FT |
+|---|---|---|---|---|---|
+| aglen | 200 | +0.13 ± 0.18 | +0.37 ± 0.31 | **-1.98 ± 0.56** | **-2.47 ± 0.47** |
+| rounds | 200 | +0.33 ± 0.28 | -0.27 ± 0.57 | -0.19 ± 0.49 | +0.06 ± 0.47 |
+| aglen | 1,000 | **+0.37 ± 0.15** | +0.36 ± 0.29 | -0.15 ± 0.37 | -0.65 ± 0.46 |
+| rounds | 1,000 | **+0.96 ± 0.24** | **+1.30 ± 0.48** | +0.69 ± 0.47 | **+1.76 ± 0.44** |
+
+On `aglen` at memory 200 the split variant loses almost as much as plain replay.
+
+**(c) The gap between memory loss and validation loss is larger at memory 200 than at 1,000, and
+default PDCL's shortfall against the best fixed weight is smaller at 1,000.**
+*First part: held.* Validation loss minus loss on the replayed stored examples, mean over the six
+streams (earlier tasks, checkpoints after each task's phase):
+
+| Method | memory 200 | memory 1,000 | 200 − 1,000 |
+|---|---|---|---|
+| ER w=0.03 | 0.219 ± 0.004 | 0.091 ± 0.004 | **+0.128 ± 0.003** |
+| ER w=0.3 | 0.714 ± 0.003 | 0.331 ± 0.006 | **+0.384 ± 0.004** |
+| ER w=1 | 0.903 ± 0.004 | 0.530 ± 0.007 | **+0.373 ± 0.005** |
+| ER w=3 | 1.024 ± 0.003 | 0.644 ± 0.007 | **+0.380 ± 0.005** |
+| PDCL | 0.518 ± 0.005 | 0.288 ± 0.006 | **+0.231 ± 0.004** |
+| PDCL oracle | 0.788 ± 0.008 | 0.410 ± 0.006 | **+0.378 ± 0.008** |
+| PDCL split | 0.952 ± 0.015 | 0.621 ± 0.008 | **+0.330 ± 0.013** |
+
+Per stream it holds for every method on every stream except default PDCL on `aglen` (+0.005 ± 0.004),
+where PDCL hardly replays.
+*Second part: held on the skewed streams together, not stream by stream.*
+
+| Quantity | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds | mean, skewed | mean, all |
+|---|---|---|---|---|---|---|---|---|
+| best fixed − PDCL, memory 200 | **+0.49 ± 0.18** | **+1.22 ± 0.50** | **+1.66 ± 0.51** | **+1.67 ± 0.35** | **-0.91 ± 0.28** | +0.54 ± 0.36 | **+1.26 ± 0.16** | **+0.78 ± 0.13** |
+| best fixed − PDCL, memory 1,000 | +0.49 ± 0.42 | **+1.60 ± 0.33** | +0.35 ± 0.47 | -0.35 ± 0.32 | +0.38 ± 0.32 | **+1.03 ± 0.38** | **+0.52 ± 0.18** | **+0.58 ± 0.16** |
+| shortfall at 200 − at 1,000 | +0.01 ± 0.45 | -0.37 ± 0.52 | +1.31 ± 0.70 | **+2.03 ± 0.41** | **-1.29 ± 0.33** | -0.49 ± 0.53 | **+0.74 ± 0.24** | +0.20 ± 0.17 |
+
+The shortfall shrinks on `skew:0.95` and on the mean of the skewed streams; it does not shrink on
+`skew:0.7` and `skew:0.8`, and over all six streams the change is a null. On `aglen` the sign
+reverses for a different reason: at memory 200 every fixed weight is below fine-tuning there and PDCL
+wins by not replaying; at memory 1,000 a small weight (0.03) helps and PDCL does not use it.
+
+## 4. What the logs show
+
+Dual variables (mean after each task's phase, over earlier tasks; `fig_f1_duals` for `skew:0.9`):
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | 0.051 | 0.108 | 0.243 | 0.480 | 0.002 | 0.016 |
+| PDCL, memory 1,000 | 0.161 | 0.298 | 0.563 | 0.866 | 0.004 | 0.050 |
+| Oracle, memory 200 | 1.47 | 3.76 | 8.34 | 12.27 | 0.007 | 0.42 |
+| Oracle, memory 1,000 | 0.71 | 1.75 | 2.91 | 3.68 | 0.006 | 0.085 |
+| Split, memory 200 | 2.56 | 5.51 | 11.03 | 17.15 | 0.81 | 1.01 |
+| Split, memory 1,000 | 1.54 | 3.08 | 5.12 | 6.50 | 0.061 | 0.61 |
+
+- **Default PDCL sees its constraints as met while they are not.** On `skew:0.9` at memory 200 the
+  loss on its stored examples is 0.186 and the validation loss of the same tasks is 1.080. Its dual
+  variables rise at the start of a phase and decay to near zero within it (`fig_f1_duals`).
+- **Measured honestly, the constraints cannot be met, so the oracle's dual variables never come
+  down.** They keep growing to the end of the stream (8 to 12 on average on `skew:0.9` and `0.95` at
+  memory 200), because replaying 200 stored examples cannot bring the validation loss of the earlier
+  tasks back under 1.1 x its old value. The oracle therefore acts as a switch: no replay on `aglen`
+  (dual 0.007), heavy replay on the skewed streams. This is why it tracks the best fixed weight at
+  both ends.
+- **Why split fails where the oracle does not** (*exploratory reading*). The held-out half is unseen
+  only after the task's phase; during the phase it was training data. Its constraint level is
+  therefore set too low (`aglen`, memory 200, task 0: 0.474 for split against 0.549 for the oracle),
+  and once the examples stop being trained on, their loss drifts up to the validation level (held
+  loss 0.634 on `aglen`) without any forgetting. The constraint reads as violated, the dual variable
+  grows (0.81 on `aglen` against 0.007 for the oracle), and the model replays a memory of half the
+  size, which is what lowers accuracy for ER on this stream. The estimate is also noisy: at memory
+  200 the held-out half has 33 to 100 examples per task.
+- *Exploratory:* both variants pay for retention with the current task. Accuracy of each task at the
+  end of its own phase, against fine-tuning, on `skew:0.9` at memory 200: default −5.02 ± 0.37,
+  oracle −9.96 ± 0.52, split −7.03 ± 0.34 (table T18).
+
+Figure for the gap: `paper/figures/fig_f1_gap`.
+
+## 5. Limits
+
+- The oracle reads validation data during training (the same data final accuracy is computed on). It
+  bounds what honest measurement can do; it is not a usable method. The usable variant tested here
+  failed.
+- The best fixed weight is the best of four on the same seeds, so "minus the best fixed weight" is
+  biased against PDCL and its variants. The weights 0.3, 1 and 3 are within about half a point of
+  each other on the skewed streams, so the bias is small there.
+- One null sits at the threshold: oracle − PDCL on `skew:0.8`, memory 200, is +1.04 ± 0.53.
+- Both variants measure the constraint on a batch of 32 per step, as default PDCL does on its replay
+  batch; the clipping of the dual variable at zero makes a noisy measurement push it upward. The
+  constraint level of a variant is set on a different quantity than the default's (validation or
+  held-out loss, not the recent training loss), so the variants change the level and the measurement
+  together.
+- Split halves the replayed memory (100 or 500 examples), so it differs from default PDCL in two
+  ways. A split whose held-out half is also kept out of training during the task's own phase was not
+  in the design and was not run.
+- The stored examples can contain duplicates (the staging pool samples the minibatch stream), as in
+  every earlier run; in split runs the two halves are disjoint as sets.
+- One model, one dataset, four tasks, 1,000 steps per task, dual step 0.01, epsilon scale 1.1. The
+  trainer change exists only in `train_batched.py`, not in `domainbed/algorithms.py`.
+- Batch composition differs from the first round, so default-PDCL numbers differ from E2 in the
+  second decimal (the memory draws share one random stream per batch of runs).
+
+## Appendix: all tables (`results/f1_tables.md`)
+
+900 runs; seeds per stream, method and memory: 10 to 10.
+
+### T1. Final accuracy (%), memory 200
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning | 66.38 ± 0.34 | 64.27 ± 0.50 | 57.42 ± 0.51 | 52.57 ± 0.32 | 68.00 ± 0.44 | 66.54 ± 0.56 |
+| ER w=0.03 | 67.16 ± 0.37 | 64.81 ± 0.42 | 61.20 ± 0.53 | 57.09 ± 0.63 | 67.22 ± 0.38 | 67.41 ± 0.46 |
+| ER w=0.3 | 66.79 ± 0.35 | 65.08 ± 0.35 | 63.26 ± 0.48 | 61.50 ± 0.55 | 65.60 ± 0.39 | 66.91 ± 0.45 |
+| ER w=1 | 66.17 ± 0.38 | 65.47 ± 0.23 | 62.84 ± 0.39 | 61.62 ± 0.57 | 65.53 ± 0.35 | 66.60 ± 0.48 |
+| ER w=3 | 65.84 ± 0.36 | 65.48 ± 0.32 | 63.07 ± 0.41 | 61.57 ± 0.52 | 65.36 ± 0.41 | 66.13 ± 0.56 |
+| PDCL | 66.67 ± 0.28 | 64.26 ± 0.58 | 61.60 ± 0.55 | 59.94 ± 0.42 | 68.13 ± 0.37 | 66.87 ± 0.50 |
+| PDCL oracle | 66.40 ± 0.38 | 65.30 ± 0.28 | 62.87 ± 0.31 | 62.29 ± 0.55 | 68.37 ± 0.38 | 66.28 ± 0.75 |
+| PDCL split | 66.06 ± 0.18 | 64.57 ± 0.38 | 62.90 ± 0.41 | 60.10 ± 0.43 | 66.02 ± 0.62 | 66.36 ± 0.33 |
+
+### T2. Final accuracy (%), memory 1000
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning | 66.38 ± 0.34 | 64.27 ± 0.50 | 57.42 ± 0.51 | 52.57 ± 0.32 | 68.00 ± 0.44 | 66.54 ± 0.56 |
+| ER w=0.03 | 67.16 ± 0.41 | 65.37 ± 0.37 | 61.49 ± 0.59 | 57.34 ± 0.57 | 68.74 ± 0.44 | 67.70 ± 0.55 |
+| ER w=0.3 | 68.03 ± 0.37 | 67.44 ± 0.25 | 67.09 ± 0.38 | 65.92 ± 0.35 | 67.65 ± 0.38 | 68.54 ± 0.37 |
+| ER w=1 | 67.62 ± 0.31 | 66.70 ± 0.31 | 66.74 ± 0.34 | 66.19 ± 0.44 | 67.35 ± 0.34 | 68.30 ± 0.39 |
+| ER w=3 | 67.17 ± 0.25 | 66.52 ± 0.28 | 66.93 ± 0.26 | 66.34 ± 0.37 | 66.22 ± 0.45 | 68.23 ± 0.37 |
+| PDCL | 67.54 ± 0.44 | 65.84 ± 0.44 | 66.74 ± 0.46 | 66.70 ± 0.31 | 68.37 ± 0.38 | 67.51 ± 0.43 |
+| PDCL oracle | 67.69 ± 0.18 | 67.02 ± 0.31 | 67.23 ± 0.24 | 66.44 ± 0.27 | 68.36 ± 0.43 | 67.84 ± 0.55 |
+| PDCL split | 66.78 ± 0.21 | 66.09 ± 0.40 | 65.29 ± 0.21 | 64.69 ± 0.36 | 67.85 ± 0.48 | 67.23 ± 0.55 |
+
+### T3. Forgetting (points), memory 200
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning | 10.16 ± 0.58 | 22.38 ± 0.63 | 43.97 ± 0.78 | 56.51 ± 0.56 | 3.18 ± 0.55 | 3.80 ± 0.67 |
+| ER w=0.03 | 8.91 ± 0.68 | 21.15 ± 0.69 | 38.33 ± 0.74 | 50.34 ± 0.89 | 3.93 ± 0.38 | 2.51 ± 0.59 |
+| ER w=0.3 | 7.59 ± 0.66 | 15.96 ± 0.94 | 28.95 ± 0.78 | 37.45 ± 0.58 | 5.78 ± 0.44 | 3.00 ± 0.33 |
+| ER w=1 | 6.47 ± 0.57 | 13.35 ± 0.87 | 26.82 ± 0.69 | 33.51 ± 0.88 | 4.72 ± 0.32 | 2.78 ± 0.42 |
+| ER w=3 | 6.52 ± 0.52 | 12.57 ± 0.72 | 25.86 ± 0.84 | 32.84 ± 0.98 | 4.24 ± 0.26 | 2.90 ± 0.44 |
+| PDCL | 9.43 ± 0.55 | 19.82 ± 1.14 | 31.68 ± 0.97 | 37.91 ± 0.47 | 3.11 ± 0.42 | 3.32 ± 0.44 |
+| PDCL oracle | 5.49 ± 0.65 | 11.41 ± 0.78 | 23.41 ± 0.87 | 29.03 ± 0.97 | 2.78 ± 0.27 | 3.34 ± 0.77 |
+| PDCL split | 6.92 ± 0.51 | 14.70 ± 0.75 | 27.27 ± 0.79 | 36.88 ± 0.47 | 5.57 ± 0.58 | 3.57 ± 0.29 |
+
+### T4. Forgetting (points), memory 1000
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning | 10.16 ± 0.58 | 22.38 ± 0.63 | 43.97 ± 0.78 | 56.51 ± 0.56 | 3.18 ± 0.55 | 3.80 ± 0.67 |
+| ER w=0.03 | 9.05 ± 0.71 | 20.40 ± 0.48 | 38.03 ± 0.86 | 50.14 ± 0.83 | 2.26 ± 0.39 | 2.08 ± 0.66 |
+| ER w=0.3 | 5.56 ± 0.64 | 13.16 ± 0.65 | 22.71 ± 0.67 | 29.44 ± 0.60 | 2.97 ± 0.42 | 1.60 ± 0.40 |
+| ER w=1 | 3.71 ± 0.33 | 9.80 ± 0.62 | 14.85 ± 0.73 | 20.11 ± 0.75 | 2.53 ± 0.37 | 1.41 ± 0.37 |
+| ER w=3 | 2.47 ± 0.20 | 6.89 ± 0.59 | 11.30 ± 0.75 | 14.01 ± 0.63 | 2.44 ± 0.49 | 0.67 ± 0.39 |
+| PDCL | 6.63 ± 0.76 | 13.86 ± 0.98 | 15.39 ± 0.91 | 15.51 ± 0.87 | 2.72 ± 0.42 | 2.66 ± 0.50 |
+| PDCL oracle | 3.54 ± 0.52 | 6.03 ± 0.63 | 8.33 ± 0.32 | 11.02 ± 0.44 | 2.65 ± 0.43 | 1.83 ± 0.63 |
+| PDCL split | 4.26 ± 0.32 | 7.51 ± 0.70 | 12.55 ± 0.40 | 16.69 ± 0.83 | 3.44 ± 0.44 | 2.43 ± 0.43 |
+
+### T5. Best fixed weight (best of four, picked on the same seeds: biased upward)
+
+| Quantity | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| best w, memory 200 | 0.03 | 3 | 0.3 | 1 | 0.03 | 0.03 |
+| ER(best w), memory 200 | 67.16 ± 0.37 | 65.48 ± 0.32 | 63.26 ± 0.48 | 61.62 ± 0.57 | 67.22 ± 0.38 | 67.41 ± 0.46 |
+| ER(best w) − fine-tuning, memory 200 | **+0.78 ± 0.20** | **+1.21 ± 0.54** | **+5.84 ± 0.53** | **+9.05 ± 0.50** | -0.78 ± 0.40 | **+0.87 ± 0.37** |
+| best w, memory 1000 | 0.3 | 0.3 | 0.3 | 3 | 0.03 | 0.3 |
+| ER(best w), memory 1000 | 68.03 ± 0.37 | 67.44 ± 0.25 | 67.09 ± 0.38 | 66.34 ± 0.37 | 68.74 ± 0.44 | 68.54 ± 0.37 |
+| ER(best w) − fine-tuning, memory 1000 | **+1.65 ± 0.47** | **+3.17 ± 0.37** | **+9.67 ± 0.46** | **+13.77 ± 0.43** | **+0.74 ± 0.36** | **+2.00 ± 0.50** |
+
+### T6. Minus default PDCL, final accuracy (paired)
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL oracle, memory 200 | -0.26 ± 0.52 | +1.04 ± 0.53 | **+1.27 ± 0.44** | **+2.35 ± 0.42** | +0.24 ± 0.24 | -0.59 ± 0.55 |
+| PDCL split, memory 200 | **-0.60 ± 0.23** | +0.31 ± 0.53 | **+1.30 ± 0.40** | +0.16 ± 0.33 | **-2.11 ± 0.46** | -0.52 ± 0.35 |
+| PDCL oracle, memory 1000 | +0.15 ± 0.40 | **+1.18 ± 0.45** | +0.50 ± 0.31 | -0.26 ± 0.21 | -0.01 ± 0.28 | +0.34 ± 0.44 |
+| PDCL split, memory 1000 | -0.76 ± 0.48 | +0.25 ± 0.49 | **-1.45 ± 0.46** | **-2.01 ± 0.30** | -0.51 ± 0.32 | -0.28 ± 0.43 |
+
+### T7. Minus the best fixed weight, final accuracy (paired)
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | **-0.49 ± 0.18** | **-1.22 ± 0.50** | **-1.66 ± 0.51** | **-1.67 ± 0.35** | **+0.91 ± 0.28** | -0.54 ± 0.36 |
+| PDCL oracle, memory 200 | -0.76 ± 0.54 | -0.18 ± 0.19 | -0.39 ± 0.37 | **+0.67 ± 0.32** | **+1.15 ± 0.19** | -1.14 ± 0.58 |
+| PDCL split, memory 200 | **-1.10 ± 0.30** | **-0.91 ± 0.38** | -0.36 ± 0.33 | **-1.52 ± 0.38** | **-1.20 ± 0.44** | **-1.06 ± 0.49** |
+| PDCL, memory 1000 | -0.49 ± 0.42 | **-1.60 ± 0.33** | -0.35 ± 0.47 | +0.35 ± 0.32 | -0.38 ± 0.32 | **-1.03 ± 0.38** |
+| PDCL oracle, memory 1000 | -0.34 ± 0.26 | -0.41 ± 0.36 | +0.14 ± 0.31 | +0.10 ± 0.30 | -0.39 ± 0.33 | -0.70 ± 0.40 |
+| PDCL split, memory 1000 | **-1.25 ± 0.26** | **-1.35 ± 0.38** | **-1.80 ± 0.34** | **-1.65 ± 0.39** | **-0.89 ± 0.26** | **-1.31 ± 0.46** |
+
+### T8. Minus fine-tuning, final accuracy (paired)
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | +0.28 ± 0.20 | -0.01 ± 0.45 | **+4.18 ± 0.31** | **+7.37 ± 0.39** | +0.13 ± 0.18 | +0.33 ± 0.28 |
+| PDCL oracle, memory 200 | +0.02 ± 0.59 | +1.03 ± 0.54 | **+5.45 ± 0.47** | **+9.72 ± 0.61** | +0.37 ± 0.31 | -0.27 ± 0.57 |
+| PDCL split, memory 200 | -0.32 ± 0.27 | +0.30 ± 0.53 | **+5.48 ± 0.40** | **+7.53 ± 0.34** | **-1.98 ± 0.56** | -0.19 ± 0.49 |
+| ER w=0.03, memory 200 | **+0.78 ± 0.20** | +0.53 ± 0.30 | **+3.78 ± 0.24** | **+4.51 ± 0.60** | -0.78 ± 0.40 | **+0.87 ± 0.37** |
+| ER w=0.3, memory 200 | +0.40 ± 0.53 | +0.81 ± 0.51 | **+5.84 ± 0.53** | **+8.92 ± 0.51** | **-2.40 ± 0.49** | +0.36 ± 0.41 |
+| ER w=1, memory 200 | -0.21 ± 0.61 | **+1.19 ± 0.54** | **+5.42 ± 0.48** | **+9.05 ± 0.50** | **-2.47 ± 0.47** | +0.06 ± 0.47 |
+| ER w=3, memory 200 | -0.55 ± 0.58 | **+1.21 ± 0.54** | **+5.65 ± 0.44** | **+8.99 ± 0.49** | **-2.64 ± 0.45** | -0.41 ± 0.44 |
+| PDCL, memory 1000 | **+1.16 ± 0.30** | **+1.57 ± 0.49** | **+9.32 ± 0.58** | **+14.12 ± 0.39** | **+0.37 ± 0.15** | **+0.96 ± 0.24** |
+| PDCL oracle, memory 1000 | **+1.31 ± 0.35** | **+2.75 ± 0.47** | **+9.82 ± 0.40** | **+13.87 ± 0.36** | +0.36 ± 0.29 | **+1.30 ± 0.48** |
+| PDCL split, memory 1000 | +0.40 ± 0.38 | **+1.82 ± 0.47** | **+7.87 ± 0.49** | **+12.11 ± 0.44** | -0.15 ± 0.37 | +0.69 ± 0.47 |
+| ER w=0.03, memory 1000 | **+0.77 ± 0.15** | **+1.09 ± 0.19** | **+4.07 ± 0.26** | **+4.77 ± 0.45** | **+0.74 ± 0.36** | **+1.15 ± 0.27** |
+| ER w=0.3, memory 1000 | **+1.65 ± 0.47** | **+3.17 ± 0.37** | **+9.67 ± 0.46** | **+13.35 ± 0.37** | -0.35 ± 0.40 | **+2.00 ± 0.50** |
+| ER w=1, memory 1000 | **+1.24 ± 0.38** | **+2.42 ± 0.41** | **+9.32 ± 0.47** | **+13.62 ± 0.56** | -0.65 ± 0.46 | **+1.76 ± 0.44** |
+| ER w=3, memory 1000 | **+0.79 ± 0.29** | **+2.24 ± 0.47** | **+9.51 ± 0.42** | **+13.77 ± 0.43** | **-1.78 ± 0.48** | **+1.68 ± 0.52** |
+
+### T9. Prediction (a): variant minus default PDCL on the skewed streams, and the share of the gap between default PDCL and the best fixed weight that it closes (pooled rows are exploratory)
+
+| Stream | memory | best w | ER(best w) − PDCL | oracle − PDCL | gap closed | split − PDCL | gap closed | oracle − split |
+|---|---|---|---|---|---|---|---|---|
+| skew:0.7 | 200 | 0.03 | **+0.49 ± 0.18** | -0.26 ± 0.52 | -54% | **-0.60 ± 0.23** | -123% | +0.34 ± 0.39 |
+| skew:0.8 | 200 | 3 | **+1.22 ± 0.50** | +1.04 ± 0.53 | 85% | +0.31 ± 0.53 | 26% | +0.73 ± 0.38 |
+| skew:0.9 | 200 | 0.3 | **+1.66 ± 0.51** | **+1.27 ± 0.44** | 76% | **+1.30 ± 0.40** | 78% | -0.03 ± 0.38 |
+| skew:0.95 | 200 | 1 | **+1.67 ± 0.35** | **+2.35 ± 0.42** | 140% | +0.16 ± 0.33 | 9% | **+2.19 ± 0.52** |
+| skew:0.8–0.95 pooled | 200 |  | **+1.52 ± 0.21** | **+1.55 ± 0.17** | 102% | **+0.59 ± 0.27** | 39% | **+0.96 ± 0.27** |
+| all four skewed pooled | 200 |  | **+1.26 ± 0.16** | **+1.10 ± 0.16** | 87% | +0.29 ± 0.24 | 23% | **+0.81 ± 0.21** |
+| skew:0.7 | 1000 | 0.3 | +0.49 ± 0.42 | +0.15 ± 0.40 | no gap | -0.76 ± 0.48 | no gap | **+0.91 ± 0.20** |
+| skew:0.8 | 1000 | 0.3 | **+1.60 ± 0.33** | **+1.18 ± 0.45** | 74% | +0.25 ± 0.49 | 15% | **+0.93 ± 0.38** |
+| skew:0.9 | 1000 | 0.3 | +0.35 ± 0.47 | +0.50 ± 0.31 | no gap | **-1.45 ± 0.46** | no gap | **+1.94 ± 0.31** |
+| skew:0.95 | 1000 | 3 | -0.35 ± 0.32 | -0.26 ± 0.21 | no gap | **-2.01 ± 0.30** | no gap | **+1.75 ± 0.40** |
+| skew:0.8–0.95 pooled | 1000 |  | **+0.53 ± 0.19** | **+0.47 ± 0.23** | 89% | **-1.07 ± 0.29** | -202% | **+1.54 ± 0.23** |
+| all four skewed pooled | 1000 |  | **+0.52 ± 0.18** | +0.39 ± 0.20 | 75% | **-0.99 ± 0.24** | -191% | **+1.39 ± 0.14** |
+
+### T10. Prediction (b), safety: minus fine-tuning on `aglen` and `rounds`
+
+| Stream | memory | PDCL − FT | below by > 2 SE | oracle − FT | below by > 2 SE | split − FT | below by > 2 SE | ER w=1 − FT |
+|---|---|---|---|---|---|---|---|---|
+| aglen | 200 | +0.13 ± 0.18 | no | +0.37 ± 0.31 | no | **-1.98 ± 0.56** | yes | **-2.47 ± 0.47** |
+| rounds | 200 | +0.33 ± 0.28 | no | -0.27 ± 0.57 | no | -0.19 ± 0.49 | no | +0.06 ± 0.47 |
+| aglen | 1000 | **+0.37 ± 0.15** | no | +0.36 ± 0.29 | no | -0.15 ± 0.37 | no | -0.65 ± 0.46 |
+| rounds | 1000 | **+0.96 ± 0.24** | no | **+1.30 ± 0.48** | no | +0.69 ± 0.47 | no | **+1.76 ± 0.44** |
+
+### T11. Prediction (c), gap: validation loss minus loss on the replayed stored examples, earlier tasks, averaged over the checkpoints after each task's phase
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds | mean over streams |
+|---|---|---|---|---|---|---|---|
+| ER w=0.03, memory 200 | 0.185 ± 0.008 | 0.203 ± 0.007 | 0.251 ± 0.010 | 0.290 ± 0.022 | 0.204 ± 0.008 | 0.180 ± 0.012 | 0.219 ± 0.004 |
+| ER w=0.03, memory 1000 | 0.092 ± 0.007 | 0.083 ± 0.007 | 0.072 ± 0.008 | 0.093 ± 0.009 | 0.101 ± 0.005 | 0.104 ± 0.006 | 0.091 ± 0.004 |
+| ER w=0.03, 200 − 1000 | **+0.093 ± 0.007** | **+0.119 ± 0.009** | **+0.179 ± 0.013** | **+0.197 ± 0.016** | **+0.103 ± 0.005** | **+0.076 ± 0.007** | **+0.128 ± 0.003** |
+| ER w=0.3, memory 200 | 0.539 ± 0.007 | 0.642 ± 0.007 | 0.880 ± 0.012 | 1.143 ± 0.017 | 0.584 ± 0.016 | 0.499 ± 0.012 | 0.714 ± 0.003 |
+| ER w=0.3, memory 1000 | 0.288 ± 0.005 | 0.315 ± 0.007 | 0.379 ± 0.009 | 0.441 ± 0.012 | 0.277 ± 0.008 | 0.284 ± 0.008 | 0.331 ± 0.006 |
+| ER w=0.3, 200 − 1000 | **+0.251 ± 0.004** | **+0.327 ± 0.010** | **+0.500 ± 0.011** | **+0.702 ± 0.015** | **+0.307 ± 0.014** | **+0.215 ± 0.008** | **+0.384 ± 0.004** |
+| ER w=1, memory 200 | 0.698 ± 0.007 | 0.797 ± 0.010 | 1.073 ± 0.017 | 1.378 ± 0.025 | 0.809 ± 0.021 | 0.665 ± 0.016 | 0.903 ± 0.004 |
+| ER w=1, memory 1000 | 0.479 ± 0.006 | 0.519 ± 0.008 | 0.591 ± 0.010 | 0.657 ± 0.017 | 0.476 ± 0.009 | 0.460 ± 0.010 | 0.530 ± 0.007 |
+| ER w=1, 200 − 1000 | **+0.219 ± 0.005** | **+0.279 ± 0.014** | **+0.483 ± 0.015** | **+0.721 ± 0.022** | **+0.333 ± 0.018** | **+0.206 ± 0.013** | **+0.373 ± 0.005** |
+| ER w=3, memory 200 | 0.801 ± 0.008 | 0.895 ± 0.012 | 1.197 ± 0.022 | 1.506 ± 0.025 | 0.969 ± 0.025 | 0.777 ± 0.018 | 1.024 ± 0.003 |
+| ER w=3, memory 1000 | 0.615 ± 0.009 | 0.638 ± 0.009 | 0.682 ± 0.012 | 0.738 ± 0.017 | 0.619 ± 0.010 | 0.575 ± 0.012 | 0.644 ± 0.007 |
+| ER w=3, 200 − 1000 | **+0.186 ± 0.006** | **+0.257 ± 0.015** | **+0.515 ± 0.019** | **+0.768 ± 0.024** | **+0.350 ± 0.022** | **+0.202 ± 0.016** | **+0.380 ± 0.005** |
+| PDCL, memory 200 | 0.267 ± 0.008 | 0.498 ± 0.006 | 0.894 ± 0.014 | 1.237 ± 0.024 | 0.075 ± 0.007 | 0.139 ± 0.010 | 0.518 ± 0.005 |
+| PDCL, memory 1000 | 0.207 ± 0.005 | 0.325 ± 0.007 | 0.468 ± 0.010 | 0.540 ± 0.015 | 0.070 ± 0.005 | 0.116 ± 0.007 | 0.288 ± 0.006 |
+| PDCL, 200 − 1000 | **+0.060 ± 0.004** | **+0.172 ± 0.007** | **+0.426 ± 0.013** | **+0.697 ± 0.021** | +0.005 ± 0.004 | **+0.023 ± 0.004** | **+0.231 ± 0.004** |
+| PDCL oracle, memory 200 | 0.663 ± 0.011 | 0.871 ± 0.018 | 1.222 ± 0.022 | 1.564 ± 0.037 | 0.082 ± 0.009 | 0.327 ± 0.033 | 0.788 ± 0.008 |
+| PDCL oracle, memory 1000 | 0.361 ± 0.011 | 0.526 ± 0.012 | 0.646 ± 0.014 | 0.721 ± 0.020 | 0.069 ± 0.005 | 0.136 ± 0.014 | 0.410 ± 0.006 |
+| PDCL oracle, 200 − 1000 | **+0.302 ± 0.009** | **+0.345 ± 0.022** | **+0.575 ± 0.016** | **+0.843 ± 0.036** | **+0.014 ± 0.006** | **+0.190 ± 0.024** | **+0.378 ± 0.008** |
+| PDCL split, memory 200 | 0.706 ± 0.024 | 0.941 ± 0.013 | 1.331 ± 0.021 | 1.870 ± 0.035 | 0.345 ± 0.048 | 0.517 ± 0.023 | 0.952 ± 0.015 |
+| PDCL split, memory 1000 | 0.576 ± 0.010 | 0.725 ± 0.015 | 0.911 ± 0.013 | 1.049 ± 0.018 | 0.104 ± 0.010 | 0.364 ± 0.015 | 0.621 ± 0.008 |
+| PDCL split, 200 − 1000 | **+0.130 ± 0.028** | **+0.217 ± 0.019** | **+0.421 ± 0.021** | **+0.821 ± 0.030** | **+0.241 ± 0.047** | **+0.153 ± 0.024** | **+0.330 ± 0.013** |
+
+### T12. Prediction (c), gap: the same at the last step
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds | mean over streams |
+|---|---|---|---|---|---|---|---|
+| ER w=0.03, memory 200 | 0.290 ± 0.011 | 0.349 ± 0.012 | 0.477 ± 0.015 | 0.552 ± 0.033 | 0.349 ± 0.010 | 0.252 ± 0.013 | 0.378 ± 0.007 |
+| ER w=0.03, memory 1000 | 0.102 ± 0.009 | 0.117 ± 0.010 | 0.113 ± 0.013 | 0.154 ± 0.015 | 0.140 ± 0.006 | 0.114 ± 0.007 | 0.123 ± 0.006 |
+| ER w=0.03, 200 − 1000 | **+0.188 ± 0.012** | **+0.231 ± 0.014** | **+0.363 ± 0.021** | **+0.398 ± 0.029** | **+0.209 ± 0.007** | **+0.138 ± 0.010** | **+0.255 ± 0.006** |
+| ER w=0.3, memory 200 | 0.758 ± 0.011 | 0.930 ± 0.023 | 1.278 ± 0.033 | 1.671 ± 0.065 | 0.892 ± 0.021 | 0.673 ± 0.012 | 1.034 ± 0.009 |
+| ER w=0.3, memory 1000 | 0.475 ± 0.006 | 0.542 ± 0.012 | 0.688 ± 0.017 | 0.813 ± 0.019 | 0.477 ± 0.012 | 0.435 ± 0.009 | 0.571 ± 0.009 |
+| ER w=0.3, 200 − 1000 | **+0.283 ± 0.010** | **+0.388 ± 0.027** | **+0.590 ± 0.032** | **+0.858 ± 0.062** | **+0.415 ± 0.017** | **+0.238 ± 0.010** | **+0.462 ± 0.007** |
+| ER w=1, memory 200 | 0.883 ± 0.017 | 1.030 ± 0.023 | 1.436 ± 0.032 | 1.868 ± 0.077 | 1.121 ± 0.021 | 0.821 ± 0.018 | 1.193 ± 0.011 |
+| ER w=1, memory 1000 | 0.718 ± 0.008 | 0.818 ± 0.015 | 0.920 ± 0.018 | 1.062 ± 0.022 | 0.764 ± 0.011 | 0.667 ± 0.011 | 0.825 ± 0.008 |
+| ER w=1, 200 − 1000 | **+0.166 ± 0.017** | **+0.212 ± 0.027** | **+0.516 ± 0.026** | **+0.806 ± 0.075** | **+0.357 ± 0.020** | **+0.154 ± 0.014** | **+0.369 ± 0.010** |
+| ER w=3, memory 200 | 0.974 ± 0.013 | 1.099 ± 0.033 | 1.556 ± 0.037 | 2.022 ± 0.072 | 1.280 ± 0.030 | 0.922 ± 0.025 | 1.309 ± 0.012 |
+| ER w=3, memory 1000 | 0.868 ± 0.011 | 0.941 ± 0.015 | 0.999 ± 0.020 | 1.120 ± 0.028 | 0.936 ± 0.012 | 0.815 ± 0.016 | 0.946 ± 0.010 |
+| ER w=3, 200 − 1000 | **+0.106 ± 0.013** | **+0.158 ± 0.040** | **+0.558 ± 0.036** | **+0.902 ± 0.079** | **+0.344 ± 0.026** | **+0.107 ± 0.021** | **+0.362 ± 0.012** |
+| PDCL, memory 200 | 0.298 ± 0.012 | 0.583 ± 0.015 | 1.152 ± 0.029 | 1.710 ± 0.040 | 0.086 ± 0.008 | 0.138 ± 0.008 | 0.661 ± 0.012 |
+| PDCL, memory 1000 | 0.257 ± 0.008 | 0.470 ± 0.009 | 0.714 ± 0.025 | 0.870 ± 0.029 | 0.077 ± 0.005 | 0.121 ± 0.007 | 0.418 ± 0.010 |
+| PDCL, 200 − 1000 | **+0.041 ± 0.007** | **+0.113 ± 0.013** | **+0.438 ± 0.033** | **+0.840 ± 0.047** | +0.010 ± 0.006 | **+0.017 ± 0.005** | **+0.243 ± 0.011** |
+| PDCL oracle, memory 200 | 0.917 ± 0.026 | 1.146 ± 0.030 | 1.701 ± 0.038 | 2.190 ± 0.087 | 0.127 ± 0.018 | 0.621 ± 0.068 | 1.117 ± 0.016 |
+| PDCL oracle, memory 1000 | 0.639 ± 0.022 | 0.885 ± 0.019 | 1.018 ± 0.016 | 1.157 ± 0.028 | 0.072 ± 0.007 | 0.192 ± 0.033 | 0.661 ± 0.008 |
+| PDCL oracle, 200 − 1000 | **+0.278 ± 0.028** | **+0.261 ± 0.043** | **+0.683 ± 0.044** | **+1.033 ± 0.098** | **+0.055 ± 0.014** | **+0.429 ± 0.059** | **+0.456 ± 0.018** |
+| PDCL split, memory 200 | 0.908 ± 0.030 | 1.200 ± 0.033 | 1.706 ± 0.051 | 2.432 ± 0.073 | 0.781 ± 0.097 | 0.814 ± 0.033 | 1.307 ± 0.028 |
+| PDCL split, memory 1000 | 0.911 ± 0.015 | 1.084 ± 0.024 | 1.358 ± 0.028 | 1.634 ± 0.040 | 0.233 ± 0.032 | 0.708 ± 0.025 | 0.988 ± 0.013 |
+| PDCL split, 200 − 1000 | -0.002 ± 0.035 | **+0.116 ± 0.040** | **+0.348 ± 0.045** | **+0.798 ± 0.079** | **+0.548 ± 0.100** | **+0.106 ± 0.037** | **+0.319 ± 0.025** |
+
+### T13. Loss on the replayed stored examples and validation loss of earlier tasks (averaged over the checkpoints after each task's phase)
+
+| Quantity | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| ER w=0.03, memory 200, mem loss | 0.503 ± 0.009 | 0.614 ± 0.010 | 0.806 ± 0.012 | 1.043 ± 0.016 | 0.383 ± 0.006 | 0.435 ± 0.009 |
+| ER w=0.03, memory 200, val loss | 0.688 ± 0.005 | 0.816 ± 0.011 | 1.057 ± 0.009 | 1.333 ± 0.011 | 0.588 ± 0.005 | 0.616 ± 0.007 |
+| ER w=0.03, memory 1000, mem loss | 0.589 ± 0.009 | 0.721 ± 0.009 | 0.959 ± 0.010 | 1.195 ± 0.005 | 0.468 ± 0.003 | 0.504 ± 0.004 |
+| ER w=0.03, memory 1000, val loss | 0.681 ± 0.006 | 0.804 ± 0.011 | 1.031 ± 0.009 | 1.288 ± 0.010 | 0.570 ± 0.004 | 0.608 ± 0.006 |
+| ER w=0.3, memory 200, mem loss | 0.186 ± 0.004 | 0.190 ± 0.003 | 0.176 ± 0.003 | 0.181 ± 0.005 | 0.170 ± 0.003 | 0.177 ± 0.004 |
+| ER w=0.3, memory 200, val loss | 0.725 ± 0.005 | 0.832 ± 0.006 | 1.056 ± 0.013 | 1.324 ± 0.016 | 0.753 ± 0.016 | 0.676 ± 0.010 |
+| ER w=0.3, memory 1000, mem loss | 0.359 ± 0.003 | 0.379 ± 0.005 | 0.390 ± 0.005 | 0.409 ± 0.006 | 0.333 ± 0.004 | 0.321 ± 0.004 |
+| ER w=0.3, memory 1000, val loss | 0.646 ± 0.003 | 0.694 ± 0.005 | 0.770 ± 0.008 | 0.850 ± 0.008 | 0.610 ± 0.006 | 0.605 ± 0.006 |
+| ER w=1, memory 200, mem loss | 0.097 ± 0.002 | 0.096 ± 0.002 | 0.080 ± 0.002 | 0.075 ± 0.003 | 0.096 ± 0.001 | 0.100 ± 0.002 |
+| ER w=1, memory 200, val loss | 0.795 ± 0.006 | 0.893 ± 0.009 | 1.154 ± 0.018 | 1.452 ± 0.025 | 0.905 ± 0.021 | 0.766 ± 0.015 |
+| ER w=1, memory 1000, mem loss | 0.213 ± 0.002 | 0.213 ± 0.002 | 0.203 ± 0.003 | 0.193 ± 0.005 | 0.215 ± 0.002 | 0.199 ± 0.003 |
+| ER w=1, memory 1000, val loss | 0.692 ± 0.006 | 0.732 ± 0.007 | 0.794 ± 0.010 | 0.850 ± 0.014 | 0.691 ± 0.008 | 0.659 ± 0.009 |
+| ER w=3, memory 200, mem loss | 0.070 ± 0.002 | 0.067 ± 0.002 | 0.053 ± 0.002 | 0.044 ± 0.002 | 0.072 ± 0.001 | 0.074 ± 0.002 |
+| ER w=3, memory 200, val loss | 0.871 ± 0.007 | 0.962 ± 0.011 | 1.250 ± 0.021 | 1.550 ± 0.024 | 1.041 ± 0.026 | 0.850 ± 0.018 |
+| ER w=3, memory 1000, mem loss | 0.161 ± 0.002 | 0.156 ± 0.002 | 0.137 ± 0.003 | 0.125 ± 0.003 | 0.165 ± 0.002 | 0.155 ± 0.003 |
+| ER w=3, memory 1000, val loss | 0.776 ± 0.009 | 0.794 ± 0.010 | 0.819 ± 0.012 | 0.863 ± 0.015 | 0.784 ± 0.010 | 0.730 ± 0.012 |
+| PDCL, memory 200, mem loss | 0.425 ± 0.007 | 0.324 ± 0.005 | 0.186 ± 0.005 | 0.129 ± 0.003 | 0.503 ± 0.005 | 0.481 ± 0.005 |
+| PDCL, memory 200, val loss | 0.692 ± 0.006 | 0.822 ± 0.010 | 1.080 ± 0.016 | 1.366 ± 0.023 | 0.578 ± 0.005 | 0.620 ± 0.006 |
+| PDCL, memory 1000, mem loss | 0.440 ± 0.005 | 0.372 ± 0.005 | 0.289 ± 0.004 | 0.268 ± 0.004 | 0.507 ± 0.002 | 0.490 ± 0.003 |
+| PDCL, memory 1000, val loss | 0.648 ± 0.005 | 0.698 ± 0.005 | 0.757 ± 0.010 | 0.808 ± 0.012 | 0.577 ± 0.005 | 0.606 ± 0.005 |
+| PDCL oracle, memory 200, mem loss | 0.138 ± 0.003 | 0.095 ± 0.004 | 0.067 ± 0.002 | 0.055 ± 0.004 | 0.495 ± 0.008 | 0.348 ± 0.017 |
+| PDCL oracle, memory 200, val loss | 0.800 ± 0.009 | 0.966 ± 0.015 | 1.289 ± 0.021 | 1.619 ± 0.035 | 0.577 ± 0.004 | 0.674 ± 0.018 |
+| PDCL oracle, memory 1000, mem loss | 0.318 ± 0.006 | 0.235 ± 0.004 | 0.195 ± 0.004 | 0.173 ± 0.005 | 0.506 ± 0.002 | 0.469 ± 0.011 |
+| PDCL oracle, memory 1000, val loss | 0.678 ± 0.008 | 0.760 ± 0.010 | 0.841 ± 0.013 | 0.894 ± 0.017 | 0.575 ± 0.004 | 0.605 ± 0.006 |
+| PDCL split, memory 200, mem loss | 0.114 ± 0.017 | 0.068 ± 0.003 | 0.042 ± 0.001 | 0.036 ± 0.002 | 0.354 ± 0.022 | 0.207 ± 0.017 |
+| PDCL split, memory 200, val loss | 0.820 ± 0.010 | 1.010 ± 0.011 | 1.374 ± 0.021 | 1.906 ± 0.033 | 0.699 ± 0.029 | 0.724 ± 0.014 |
+| PDCL split, memory 1000, mem loss | 0.193 ± 0.005 | 0.154 ± 0.005 | 0.120 ± 0.003 | 0.108 ± 0.003 | 0.475 ± 0.009 | 0.290 ± 0.009 |
+| PDCL split, memory 1000, val loss | 0.769 ± 0.006 | 0.878 ± 0.012 | 1.031 ± 0.011 | 1.157 ± 0.016 | 0.579 ± 0.005 | 0.654 ± 0.008 |
+| Fine-tuning, val loss | 0.706 ± 0.007 | 0.862 ± 0.012 | 1.210 ± 0.009 | 1.684 ± 0.009 | 0.580 ± 0.005 | 0.633 ± 0.006 |
+| PDCL split, memory 200, held loss | 0.650 ± 0.031 | 0.850 ± 0.047 | 1.214 ± 0.054 | 1.790 ± 0.062 | 0.634 ± 0.035 | 0.587 ± 0.021 |
+| PDCL split, memory 1000, held loss | 0.651 ± 0.011 | 0.767 ± 0.016 | 0.895 ± 0.019 | 1.013 ± 0.026 | 0.506 ± 0.007 | 0.547 ± 0.008 |
+
+### T14. Prediction (c), shortfall of default PDCL against the best fixed weight by memory size
+
+| Quantity | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds | mean, skewed streams | mean, all streams |
+|---|---|---|---|---|---|---|---|---|
+| ER(best w) − PDCL, memory 200 | **+0.49 ± 0.18** | **+1.22 ± 0.50** | **+1.66 ± 0.51** | **+1.67 ± 0.35** | **-0.91 ± 0.28** | +0.54 ± 0.36 | **+1.26 ± 0.16** | **+0.78 ± 0.13** |
+| ER(best w) − PDCL, memory 1000 | +0.49 ± 0.42 | **+1.60 ± 0.33** | +0.35 ± 0.47 | -0.35 ± 0.32 | +0.38 ± 0.32 | **+1.03 ± 0.38** | **+0.52 ± 0.18** | **+0.58 ± 0.16** |
+| shortfall at 200 − shortfall at 1000 | +0.01 ± 0.45 | -0.37 ± 0.52 | +1.31 ± 0.70 | **+2.03 ± 0.41** | **-1.29 ± 0.33** | -0.49 ± 0.53 | **+0.74 ± 0.24** | +0.20 ± 0.17 |
+
+### T15. Dual variables (mean over the checkpoints after each task's phase and over earlier tasks)
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | 0.051 ± 0.001 | 0.108 ± 0.002 | 0.243 ± 0.004 | 0.480 ± 0.011 | 0.002 ± 0.000 | 0.016 ± 0.002 |
+| PDCL, memory 1000 | 0.161 ± 0.003 | 0.298 ± 0.004 | 0.563 ± 0.009 | 0.866 ± 0.017 | 0.004 ± 0.001 | 0.050 ± 0.002 |
+| PDCL oracle, memory 200 | 1.468 ± 0.078 | 3.757 ± 0.160 | 8.339 ± 0.187 | 12.271 ± 0.272 | 0.007 ± 0.003 | 0.424 ± 0.103 |
+| PDCL oracle, memory 1000 | 0.711 ± 0.045 | 1.753 ± 0.083 | 2.914 ± 0.111 | 3.675 ± 0.140 | 0.006 ± 0.002 | 0.085 ± 0.016 |
+| PDCL split, memory 200 | 2.560 ± 0.266 | 5.505 ± 0.395 | 11.027 ± 0.350 | 17.154 ± 0.475 | 0.813 ± 0.249 | 1.008 ± 0.147 |
+| PDCL split, memory 1000 | 1.543 ± 0.080 | 3.083 ± 0.141 | 5.122 ± 0.197 | 6.503 ± 0.104 | 0.061 ± 0.014 | 0.608 ± 0.049 |
+
+### T16. Constraint levels epsilon of tasks 0 / 1 / 2
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | 0.505 / 0.483 / 0.418 | 0.411 / 0.423 / 0.322 | 0.276 / 0.360 / 0.180 | 0.172 / 0.360 / 0.113 | 0.501 / 0.572 / 0.537 | 0.564 / 0.550 / 0.386 |
+| PDCL, memory 1000 | 0.505 / 0.510 / 0.422 | 0.411 / 0.538 / 0.345 | 0.276 / 0.637 / 0.230 | 0.172 / 0.775 / 0.161 | 0.501 / 0.571 / 0.537 | 0.564 / 0.550 / 0.389 |
+| PDCL oracle, memory 200 | 0.571 / 0.697 / 0.750 | 0.492 / 0.716 / 0.702 | 0.317 / 0.677 / 0.528 | 0.193 / 0.640 / 0.423 | 0.549 / 0.644 / 0.620 | 0.657 / 0.617 / 0.638 |
+| PDCL oracle, memory 1000 | 0.570 / 0.653 / 0.658 | 0.492 / 0.708 / 0.627 | 0.317 / 0.844 / 0.611 | 0.192 / 0.992 / 0.540 | 0.549 / 0.644 / 0.620 | 0.657 / 0.616 / 0.598 |
+| PDCL split, memory 200 | 0.461 / 0.479 / 0.308 | 0.407 / 0.424 / 0.321 | 0.269 / 0.369 / 0.189 | 0.147 / 0.354 / 0.158 | 0.474 / 0.542 / 0.559 | 0.586 / 0.525 / 0.311 |
+| PDCL split, memory 1000 | 0.497 / 0.538 / 0.452 | 0.406 / 0.594 / 0.416 | 0.257 / 0.640 / 0.347 | 0.152 / 0.651 / 0.286 | 0.493 / 0.532 / 0.508 | 0.544 / 0.524 / 0.356 |
+
+### T17 (exploratory). Share of checkpoints after a task's phase at which its loss is above 1.1 x the loss it had when the phase ended, measured on the validation set and on the replayed stored examples
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| Fine-tuning, validation | 67% | 68% | 68% | 67% | 18% | 54% |
+| ER w=0.03, memory 200, validation | 67% | 68% | 69% | 69% | 32% | 42% |
+| ER w=0.03, memory 200, stored | 57% | 70% | 70% | 71% | 0% | 22% |
+| ER w=0.03, memory 1000, validation | 67% | 67% | 69% | 68% | 7% | 36% |
+| ER w=0.03, memory 1000, stored | 73% | 73% | 81% | 78% | 1% | 62% |
+| ER w=0.3, memory 200, validation | 76% | 79% | 86% | 86% | 88% | 68% |
+| ER w=0.3, memory 200, stored | 2% | 13% | 21% | 28% | 0% | 0% |
+| ER w=0.3, memory 1000, validation | 70% | 77% | 87% | 90% | 50% | 30% |
+| ER w=0.3, memory 1000, stored | 22% | 39% | 58% | 74% | 0% | 0% |
+| ER w=1, memory 200, validation | 85% | 85% | 86% | 84% | 98% | 83% |
+| ER w=1, memory 200, stored | 0% | 0% | 5% | 12% | 0% | 0% |
+| ER w=1, memory 1000, validation | 79% | 88% | 85% | 86% | 75% | 57% |
+| ER w=1, memory 1000, stored | 1% | 10% | 17% | 22% | 0% | 0% |
+| ER w=3, memory 200, validation | 88% | 86% | 85% | 84% | 100% | 90% |
+| ER w=3, memory 200, stored | 0% | 0% | 0% | 2% | 0% | 0% |
+| ER w=3, memory 1000, validation | 83% | 83% | 87% | 84% | 87% | 67% |
+| ER w=3, memory 1000, stored | 0% | 0% | 4% | 18% | 0% | 0% |
+| PDCL, memory 200, validation | 67% | 71% | 81% | 82% | 15% | 45% |
+| PDCL, memory 200, stored | 35% | 30% | 17% | 19% | 27% | 48% |
+| PDCL, memory 1000, validation | 65% | 72% | 82% | 83% | 18% | 37% |
+| PDCL, memory 1000, stored | 35% | 29% | 24% | 25% | 29% | 60% |
+| PDCL oracle, memory 200, validation | 86% | 90% | 85% | 83% | 14% | 64% |
+| PDCL oracle, memory 200, stored | 2% | 2% | 4% | 5% | 23% | 35% |
+| PDCL oracle, memory 1000, validation | 75% | 89% | 82% | 82% | 14% | 34% |
+| PDCL oracle, memory 1000, stored | 15% | 11% | 11% | 14% | 33% | 53% |
+| PDCL split, memory 200, validation | 83% | 86% | 84% | 83% | 49% | 72% |
+| PDCL split, memory 200, stored | 2% | 0% | 1% | 4% | 19% | 11% |
+| PDCL split, memory 1000, validation | 87% | 89% | 83% | 84% | 19% | 62% |
+| PDCL split, memory 1000, stored | 7% | 5% | 8% | 10% | 20% | 10% |
+
+### T18 (exploratory). Accuracy of each task at the end of its own phase, minus fine-tuning (paired)
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL, memory 200 | **-0.26 ± 0.11** | **-1.78 ± 0.39** | **-5.02 ± 0.37** | **-6.58 ± 0.37** | +0.05 ± 0.12 | -0.00 ± 0.10 |
+| PDCL oracle, memory 200 | **-3.40 ± 0.25** | **-7.02 ± 0.39** | **-9.96 ± 0.52** | **-10.89 ± 0.43** | +0.07 ± 0.10 | **-0.51 ± 0.19** |
+| PDCL split, memory 200 | **-2.68 ± 0.32** | **-5.28 ± 0.37** | **-7.03 ± 0.34** | **-7.20 ± 0.19** | -0.19 ± 0.19 | **-0.46 ± 0.16** |
+| PDCL, memory 1000 | **-1.53 ± 0.24** | **-4.71 ± 0.52** | **-12.11 ± 0.49** | **-16.63 ± 0.48** | +0.05 ± 0.07 | +0.05 ± 0.10 |
+| PDCL oracle, memory 1000 | **-3.76 ± 0.44** | **-9.56 ± 0.43** | **-18.33 ± 0.56** | **-22.81 ± 0.38** | -0.01 ± 0.09 | -0.23 ± 0.17 |
+| PDCL split, memory 1000 | **-3.93 ± 0.33** | **-9.52 ± 0.62** | **-15.83 ± 0.49** | **-17.76 ± 0.54** | +0.07 ± 0.10 | **-0.50 ± 0.20** |
+
+### T19 (exploratory). PDCL and variants minus plain ER (w = 1), final accuracy (paired)
+
+| Method | skew:0.7 | skew:0.8 | skew:0.9 | skew:0.95 | aglen | rounds |
+|---|---|---|---|---|---|---|
+| PDCL − ER w=1, memory 200 | +0.49 ± 0.53 | **-1.21 ± 0.46** | **-1.24 ± 0.45** | **-1.67 ± 0.35** | **+2.60 ± 0.33** | +0.27 ± 0.40 |
+| PDCL oracle − ER w=1, memory 200 | +0.23 ± 0.16 | -0.17 ± 0.15 | +0.03 ± 0.23 | **+0.67 ± 0.32** | **+2.84 ± 0.28** | -0.33 ± 0.45 |
+| PDCL split − ER w=1, memory 200 | -0.11 ± 0.42 | **-0.89 ± 0.39** | +0.06 ± 0.43 | **-1.52 ± 0.38** | +0.49 ± 0.43 | -0.25 ± 0.36 |
+| PDCL − ER w=1, memory 1000 | -0.08 ± 0.33 | **-0.85 ± 0.32** | +0.00 ± 0.26 | +0.50 ± 0.33 | **+1.02 ± 0.41** | -0.79 ± 0.40 |
+| PDCL oracle − ER w=1, memory 1000 | +0.07 ± 0.18 | +0.33 ± 0.26 | **+0.50 ± 0.20** | +0.25 ± 0.28 | **+1.01 ± 0.41** | -0.46 ± 0.47 |
+| PDCL split − ER w=1, memory 1000 | **-0.84 ± 0.26** | -0.61 ± 0.42 | **-1.45 ± 0.35** | **-1.51 ± 0.45** | +0.51 ± 0.42 | **-1.07 ± 0.41** |
