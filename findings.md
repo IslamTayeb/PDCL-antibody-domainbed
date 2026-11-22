@@ -5,7 +5,8 @@ Branch `pdcl-scope`. The paper's results are untouched. Everything here is new: 
 designs and predictions were written down before their runs existed (sections 0 to 0d,
 kept verbatim at the end of this file). Each experiment has its own report
 (`findings_e1.md` … `findings_r1.md`), tables (`results/*_tables.md`) and an analysis
-script that recomputes every number from the raw runs.
+script that recomputes every number from the raw runs. The raw logs of all runs are in
+`results/runs_scope.tar.xz` (`tar xJf results/runs_scope.tar.xz -C outputs`).
 
 Conventions: whole stream of four tasks, 1,000 steps per task, memory of 200 stored
 examples, ten seeds, unless stated. Final accuracy is validation accuracy at the last
