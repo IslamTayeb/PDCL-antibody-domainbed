@@ -113,7 +113,7 @@ Bars in a, b are two standard errors; bands in c, d are one.
   and for worse on `aglen`; not tested.
 - The gap is against ER w=1, as pre-registered, not against the best of F1's four weights.
 - The reruns of ER and default PDCL differ from the same configuration and seeds in F1
-  by up to 0.55 points (4 of 20 cells above two standard errors, table T9 in
+  by up to 0.55 points (4 of 24 cells above two standard errors, table T9 in
   `results/h3_tables.md`; fine-tuning is identical). The replay draws depend on which runs
   are trained together in a batch, so these are different random draws, not the same
   run repeated. All H3 comparisons are within H3; F1 numbers are context only.
