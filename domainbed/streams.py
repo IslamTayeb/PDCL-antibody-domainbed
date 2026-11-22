@@ -10,6 +10,8 @@ task can be varied while data, model and methods stay fixed.
                       to the even tasks and 1-Q to the odd ones (non-binders the
                       other way round). Q=0.5 is a random split; Q -> 1 makes the
                       binder rate alternate between high and low.
+    drift:D           four equal tasks; the binder rate rises in equal steps from
+                      task to task, by D in total (gradual drift)
     aglen             antigens sorted by length, cut into four groups (no antigen
                       shared between tasks; binder rates stay close)
     target            HIV-1, then the SARS-CoV-2 antigens in three groups by length
@@ -66,6 +68,11 @@ def task_ids(data_dir, stream):
         pos = np.array([q if k % 2 == 0 else 1 - q for k in range(T)])
         return split_by_shares(labels, pos / pos.sum(), pos[::-1] / pos.sum() if T % 2 == 0
                                else (1 - pos) / (1 - pos).sum())
+    if name == 'drift':
+        # Four equal tasks whose binder rate rises in equal steps; D is the
+        # rate of the last task minus that of the first.
+        rate = labels.mean() + float(args[0]) * (np.arange(4) - 1.5) / 3
+        return split_by_shares(labels, rate / rate.sum(), (1 - rate) / (1 - rate).sum())
     if name == 'hetero':
         # Binder shares of the four tasks: task 1 is a random quarter of the
         # data; tasks 0 and 2 are rich in binders and task 3 is poor in them.

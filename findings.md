@@ -71,3 +71,66 @@ for a task (mean after the task's phase) and fine-tuning's forgetting of that ta
 the same seed. Prediction: positive.
 
 Anything run beyond these designs is marked *exploratory* below.
+
+## 0b. Second round: designs F1–F3, fixed before any of their PDCL numbers were seen
+
+Written on 2026-11-21 after the E1 main sweep and E2 were finished and read (E3 and the
+long E1 sweep still training). What I had seen: PDCL equals fine-tuning up to `skew:0.8`
+and gains 4 to 7 points at `skew:0.9` and `0.95`; ER w=1 is 1 to 2 points above PDCL
+there and 2.4 below it on `aglen`; PDCL's dual variables decay while the loss on the
+stored examples sits under the constraint level. No run of F1–F3 existed.
+
+Protocol as in section 0 (whole stream, 1,000 steps per task, seeds 0–9, final accuracy,
+paired by seed, two standard errors). Binder-rate swing = highest minus lowest binder
+rate among the tasks of a stream.
+
+**F1. Honest constraints.** Hypothesis: PDCL under-reacts because its constraints are
+measured on stored examples that the model also trains on. Two variants behind a trainer
+option that is off by default:
+
+- *oracle*: the dual variable of an earlier task is updated from that task's validation
+  loss; its constraint level is 1.1 x the task's validation loss at the end of its phase.
+  Uses data a deployed method would not have; an upper bound on what honest measurement
+  can do.
+- *split*: half of each task's stored examples is replayed, the other half is never
+  trained on after the task's phase and is used only for the dual update; the constraint
+  level is 1.1 x the loss on that half at the end of the task's phase.
+
+Streams `skew:0.7`, `0.8`, `0.9`, `0.95`, `aglen`, `rounds`; memory 200 and 1,000.
+Methods: fine-tuning, ER with fixed weight 0.03, 0.3, 1, 3, default PDCL, the two
+variants. "Best fixed weight" = the best of the four weights on that stream and memory,
+picked on the same seeds (biased upward; disclosed). Logged: loss on the stored examples
+and validation loss of every earlier task.
+Questions and predictions: (a) variant − default PDCL on the four skewed streams.
+Prediction: oracle positive on `skew:0.8`, `0.9`, `0.95` and closing at least half of
+the gap between default PDCL and the best fixed weight; split positive but smaller.
+(b) Safety: variant − fine-tuning on `aglen` and `rounds`. Prediction: neither variant
+is more than two standard errors below fine-tuning. (c) The gap between memory loss and
+validation loss is larger at memory 200 than at 1,000, and default PDCL's shortfall
+against the best fixed weight is smaller at 1,000. The hypothesis fails if the oracle
+does not beat default PDCL on the skewed streams.
+
+**F2. Is replay's harm memorization?** `aglen`, `rounds`, `skew:0.9`; memory 50 and 200.
+Fine-tuning; ER (w=1) with 32 (default), 8 and 2 replayed examples per earlier task per
+step, the replay loss still a mean so that the weight of replay is unchanged and only
+the rate of revisiting changes; ER (32) with weight decay 0.01 and 0.1; fine-tuning with
+the same weight decay as a control. Logged: loss on the stored examples and validation
+loss of earlier tasks. Prediction: on `aglen`, replaying 2 per task removes at least
+half of ER's loss against fine-tuning at both memory sizes, while on `skew:0.9` it keeps
+at least half of ER's gain. Weight decay: no prediction. The claim fails if ER's loss
+on `aglen` does not shrink as the replay batch shrinks.
+
+**F3. Tolerable drift.** Fine-tuning, ER, PDCL, joint ERM on `skew:0.75`, `skew:0.85`
+(added to the E1 dial: swings 0, 0.20, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90) and on
+`drift:0.4`, `drift:0.6`, `drift:0.8` (binder rate rising in equal steps over the four
+tasks; total swing 0.4, 0.6, 0.8, equal to the swings of `skew:0.7`, `0.8`, `0.9`).
+Threshold of a method = the smallest swing at which it is more than two standard errors
+above fine-tuning in final accuracy, and stays so at all larger swings. Predictions: on
+the alternating dial ER's threshold is at swing 0.6 and PDCL's at 0.7 or 0.8; at equal
+swing gradual drift costs fine-tuning less final accuracy than alternation and the
+thresholds are higher. The real rounds have a swing of 0.20 (rates 0.49, 0.59, 0.39,
+0.53), which I expect to be below every threshold.
+
+**Free analyses** (existing runs only): A, a two-by-two of antigens shared or new
+against binder rate stable or shifting; B, the place of the real rounds on the dial;
+C, whether PDCL is anywhere more than two standard errors below fine-tuning.
