@@ -396,6 +396,10 @@ def run_group(jobs, data, device, code_hash):
                                 device=device).view(M, 1)
         replay_weight = torch.tensor([job.hparams.get('replay_weight', 1.0) for job in jobs],
                                      device=device).view(M, 1)
+        # Stored examples replayed per earlier task per step (hparam replay_batch;
+        # absent or 0 = batch_size, the behaviour of every run before F2).
+        replay_batch = torch.tensor([job.hparams.get('replay_batch', 0) or bs for job in jobs],
+                                    device=device).clamp(max=bs).view(M, 1, 1)
     t = 0                                              # current phase
 
     def select(j, rows, n):
@@ -524,6 +528,11 @@ def run_group(jobs, data, device, code_hash):
         if sequential:
             state = {'dual': dual.cpu().numpy(), 'eps': eps.cpu().numpy(),
                      'buf': mem_n.cpu().numpy()}
+            # Loss and accuracy on all stored examples of each task (not a sampled batch).
+            stored = (torch.arange(cap, device=device) < mem_n[:, :, None]).float()
+            at_mem = lambda v: ((v.gather(1, mem_idx.flatten(1)).view(M, D, cap) * stored).sum(2)
+                                / stored.sum(2)).cpu().numpy()       # nan for an empty memory
+            mem_loss, mem_acc = at_mem(ce), at_mem(correct)
         mem_gb = torch.cuda.max_memory_allocated() / 2 ** 30
         for j, job in enumerate(jobs):
             r = {'step': step, 'epoch': step / steps_per_epoch, 'step_time': step_time,
@@ -535,9 +544,13 @@ def run_group(jobs, data, device, code_hash):
                     r[f'dual_{k}'] = float(state['dual'][j, k])
                     r[f'eps_{k}'] = float(state['eps'][j, k])
                     r[f'buf_{k}'] = float(state['buf'][j, k])
+                    r[f'mem_loss_{k}'] = float(mem_loss[j, k])
+                    r[f'mem_acc_{k}'] = float(mem_acc[j, k])
             for e in range(T):
                 r[f'env{e}_in_acc'] = float(acc[j, 2 * e])
                 r[f'env{e}_out_acc'] = float(acc[j, 2 * e + 1])
+                r[f'env{e}_in_loss'] = float(loss[j, 2 * e])
+                r[f'env{e}_out_loss'] = float(loss[j, 2 * e + 1])
             val = [2 * e + 1 for e in job.train_envs]
             r['agg_val_acc'] = float(acc[j, val].sum() / (len(val) + 1e-9))
             r['agg_val_loss'] = float(loss[j, val].mean())
@@ -594,7 +607,10 @@ def run_group(jobs, data, device, code_hash):
                 slots = torch.arange(cap, device=device)
                 score[slots >= mem_n[:, :n_rep, None]] = 2.0
                 pick = score.topk(bs, dim=2, largest=False).indices
-                valid = (torch.arange(bs, device=device) < mem_n[:, :n_rep, None]).float()
+                # topk returns the lowest scores in order, so its first
+                # replay_batch entries are a uniform draw without replacement.
+                valid = (torch.arange(bs, device=device)
+                         < torch.minimum(mem_n[:, :n_rep, None], replay_batch)).float()
                 rep_rows = mem_idx[:, :n_rep].gather(2, pick)
                 rows = torch.cat([cur_rows, rep_rows.flatten(1)], dim=1)
             ce = -(F.log_softmax(forward(P, data, rows)[1], dim=2) * y1h[rows]).sum(2)
