@@ -1,0 +1,299 @@
+[
+ {
+  "stream": "rounds",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/rounds"
+ },
+ {
+  "stream": "rounds:3210",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/rounds3210"
+ },
+ {
+  "stream": "aglen",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/aglen"
+ },
+ {
+  "stream": "target",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/target"
+ },
+ {
+  "stream": "agrate",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/agrate"
+ },
+ {
+  "stream": "skew:0.5",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/skew0.5"
+ },
+ {
+  "stream": "skew:0.6",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/skew0.6"
+ },
+ {
+  "stream": "skew:0.7",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/skew0.7"
+ },
+ {
+  "stream": "skew:0.8",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/skew0.8"
+ },
+ {
+  "stream": "skew:0.9",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/skew0.9"
+ },
+ {
+  "stream": "skew:0.95",
+  "algorithms": [
+   "ERM",
+   "Finetune",
+   "ER",
+   "PDCL_RS"
+  ],
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "envs": [
+   -1
+  ],
+  "steps": 4000,
+  "checkpoint_freq": 250,
+  "output_root": "outputs/e1/skew0.95"
+ }
+]
