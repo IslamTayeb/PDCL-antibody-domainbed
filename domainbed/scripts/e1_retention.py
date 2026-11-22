@@ -197,8 +197,8 @@ def fig_gain(frames):
         crowd = [g for g in GROUPS if (((x - x[g]).abs() < 2.5) & ((hi - hi[g]).abs() < 0.2 * span)).sum() > 1]
         for g in GROUPS:
             if g not in crowd:
-                ax.annotate(NAME[g].replace("Skew ", "Q = "), (x[g], gains.loc[g].max()),
-                            textcoords="offset points", xytext=(0, 6), ha="center", fontsize=6, color=pa.GREY)
+                ax.annotate(NAME[g].replace("Skew ", "Q = "), (x[g], max(d.loc[g, f"{m}_gain"] + d.loc[g, f"{m}_se"] for m in ("ER", "PDCL_RS"))),
+                            textcoords="offset points", xytext=(0, 3), ha="center", fontsize=6, color=pa.GREY)
         crowd.sort(key=lambda g: gains.loc[g].min(), reverse=True)
         top, step = -0.1 * span, 0.065 * span
         for i, g in enumerate(crowd):
