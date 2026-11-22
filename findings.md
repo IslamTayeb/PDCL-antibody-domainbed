@@ -134,3 +134,56 @@ thresholds are higher. The real rounds have a swing of 0.20 (rates 0.49, 0.59, 0
 **Free analyses** (existing runs only): A, a two-by-two of antigens shared or new
 against binder rate stable or shifting; B, the place of the real rounds on the dial;
 C, whether PDCL is anywhere more than two standard errors below fine-tuning.
+
+## 0c. Third round: designs H1–H4, fixed before any of their numbers were seen
+
+Written on 2026-11-21 after E1 (main), E2, E3, F2 and F3 were finished and read; F1 and
+the long E1 sweep were still training and I had not read F1's numbers. What I had seen
+that bears on these designs: PDCL is never below fine-tuning by more than 0.2 points and
+never above replay tuned per stream; replay's cost on `aglen` does not depend on the
+replay batch; and, second-hand from the user, that the long E1 runs (five seeds) hint
+that at 5,000 steps per task replay's harm on `aglen` disappears and both memory methods
+beat fine-tuning by 1 to 2 points. No run of H1–H4 existed. Protocol as in section 0
+unless stated; every new trainer option is off by default.
+
+**H1. Long training.** 5,000 steps per task, seeds 0–9, `rounds`, `rounds:3210`,
+`aglen`, `target`: joint ERM, fine-tuning, PDCL, ER with weight 0.03, 0.3, 1. Outcome:
+final accuracy (last step). Predictions, made knowing the hint above: ER w=1 −
+fine-tuning is positive beyond two standard errors on `aglen` and `target`; PDCL −
+fine-tuning is positive on at least one of the four streams but smaller than ER's gain;
+PDCL does not beat the best of the three replay weights on any stream. Secondary,
+no prediction: each method at 5,000 against the same method at 1,000 steps per task
+(first-round runs), since the paper found that long training lowers held-out accuracy.
+
+**H2. Is the forgetting a shifted output bias?** A class-balanced loss for fine-tuning
+(each class gets half of the loss weight in every batch; no memory), on `skew:0.7`,
+`0.8`, `0.9`, `0.95`, `drift:0.4`, `0.6`, `0.8`, `agrate`, `rounds`, `aglen`, against
+fine-tuning, ER and PDCL. Outcome: share of ER's gain recovered = (balanced − plain
+fine-tuning) / (ER − fine-tuning), on the streams where ER's gain exceeds two standard
+errors. Predictions: at least half is recovered on every `skew` and `drift` stream with
+a real ER gain; less than half on `agrate`, where the shift comes with new antigens; on
+`rounds` and `aglen` balanced fine-tuning is within two standard errors of plain
+fine-tuning.
+
+**H3. Dual variables that start at 1.** PDCL with every new dual variable initialised at
+1 instead of 0, on `skew:0.7`, `0.8`, `0.9`, `0.95`, `aglen`, `rounds`, memory 200 and
+1,000, with default PDCL, fine-tuning and ER w=1 rerun alongside. Run only if F1's
+oracle variant beat default PDCL. Predictions: on `aglen` and `rounds` it is within two
+standard errors of fine-tuning (the dual variables fall quickly when the constraint
+holds); on `skew:0.9` and `0.95` it closes less than half of the gap between default
+PDCL and ER, because the constraint is still measured on memorised examples and the
+dual variables decay.
+
+**H4. Sample-level dual variables.** The per-sample dual variables of Elenter et al.
+used to choose which examples to store, checked against the paper before any run.
+Against random selection, for PDCL and for ER, on `skew:0.9`, `agrate`, `aglen`,
+`rounds`, memory 50 and 200. Outcome: final accuracy, selection by dual variables minus
+random. Prediction: a null (within two standard errors) in at least 12 of the 16 cells;
+no prediction of sign for the rest. A long shot; a null is an acceptable outcome.
+
+**Free analyses G1–G3** are *exploratory*: they use existing runs and metrics chosen
+after the results were seen. G1, accuracy on the last task against mean accuracy on the
+earlier tasks at the end of training, with fixed-weight replay tracing a curve. G2,
+accuracy on the next, unseen round at the end of each round's phase. G3, share of
+earlier tasks whose final validation loss is within 1.1 x its value at the end of the
+task's phase.
