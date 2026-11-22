@@ -187,3 +187,35 @@ earlier tasks at the end of training, with fixed-weight replay tracing a curve. 
 accuracy on the next, unseen round at the end of each round's phase. G3, share of
 earlier tasks whose final validation loss is within 1.1 x its value at the end of the
 task's phase.
+
+## 0d. R1: why does replay hurt on the new-antigen stream? Fixed before any R1 run
+
+Written on 2026-11-21 while H1–H4 were training (none of their numbers read). F2 ruled
+out the revisiting rate. Two candidate causes: (a) the stored sample is too small to
+represent the earlier task; (b) replaying earlier antigens interferes with learning new
+ones however much is stored.
+
+**What the existing runs already show** (ER w=1 minus fine-tuning, final accuracy):
+
+| Stream | Memory 50 | Memory 200 | Memory 1,000 | Source |
+|---|---|---|---|---|
+| `aglen` | −3.96 ± 0.69 | −2.10 ± 0.52 | −0.64 ± 0.42 | E2 |
+| `aglen` | −4.03 ± 0.59 | −2.69 ± 0.46 | | F2 |
+| `aglen` | | −2.47 ± 0.47 | −0.65 ± 0.46 | F1 |
+| `target` | | −1.62 ± 0.60 | | E1 |
+
+On `aglen` the cost shrinks with memory and is a null at 1,000 in two independent
+sweeps, which already points to (a). What they do not show: whether the cost keeps
+falling past zero (both estimates at 1,000 are still negative), whether ER ever rises
+above fine-tuning, and anything about `target` beyond memory 200.
+
+**Design.** `aglen`, `target`, `rounds`; whole stream, 1,000 steps per task, seeds 0–9:
+fine-tuning; ER w=1 with memory 200, 1,000, 3,000 and *full* (replay batches drawn from
+the whole training split of each earlier task; a trainer option, off by default); PDCL
+at the same four sizes. Per-task validation loss is logged. Outcome: final accuracy,
+method minus fine-tuning, paired by seed.
+
+**Prediction** (the user's, adopted): the cost is gone by 1,000 and ER is above
+fine-tuning at full memory, on `aglen` and `target` (cause a). Cause (b) is supported if
+ER is still more than two standard errors below fine-tuning at full memory. Open, no
+prediction: whether PDCL stays at fine-tuning or follows ER upward.
